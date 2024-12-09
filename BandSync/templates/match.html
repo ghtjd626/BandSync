@@ -3,17 +3,17 @@
 <table>
   <thead>
     <tr>
-      <th>Musician</th>
+      <th>User</th>
       <th>Band</th>
       <th>Score</th>
     </tr>
   </thead>
   <tbody>
-    {% for match in matches %}
+    {% for user, band, score in matches %}
     <tr>
-      <td>{{ match[0] }}</td>
-      <td>{{ match[1] }}</td>
-      <td>{{ "%.2f" | format(match[2]) }}</td>
+      <td>{{ user }}</td>
+      <td>{{ band }}</td>
+      <td>{{ score|round(2) }}</td>
     </tr>
     {% endfor %}
   </tbody>
