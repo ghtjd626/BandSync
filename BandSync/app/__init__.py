@@ -1,5 +1,11 @@
 from flask import Flask
 
-app = Flask(__name__)
+def create_app():
+    app = Flask(__name__)
+    app.config['SECRET_KEY'] = 'your_secret_key'
 
-from app import band_matcher, scheduler, ai_composer, music_analyzer, user_profiles 
+    # Import routes
+    from .routes import band_routes
+    app.register_blueprint(band_routes)
+
+    return app

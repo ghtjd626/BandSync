@@ -1,0 +1,16 @@
+{% extends "base.html" %} {% block content %}
+<h2>Add a New Band</h2>
+<form method="post">
+  <label>Band Name:</label>
+  <input type="text" name="name" required />
+  <label>Recruiting Sessions (comma-separated):</label>
+  <input type="text" name="recruiting_sessions" required />
+  <label>Required Skill:</label>
+  <input type="text" name="required_skill" required />
+  <label>Location:</label>
+  <input type="text" name="location" required />
+  <label>Genres (comma-separated):</label>
+  <input type="text" name="genres" required />
+  <button type="submit">Add Band</button>
+</form>
+{% endblock %}

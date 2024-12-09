@@ -1,0 +1,16 @@
+{% extends "base.html" %} {% block content %}
+<h2>Add a New User</h2>
+<form method="post">
+  <label>Name:</label>
+  <input type="text" name="name" required />
+  <label>Sessions (comma-separated):</label>
+  <input type="text" name="sessions" required />
+  <label>Skill Level:</label>
+  <input type="text" name="skill" required />
+  <label>Location:</label>
+  <input type="text" name="location" required />
+  <label>Genres (comma-separated):</label>
+  <input type="text" name="genres" required />
+  <button type="submit">Add User</button>
+</form>
+{% endblock %}
