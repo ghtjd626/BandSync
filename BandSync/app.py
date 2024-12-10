@@ -79,11 +79,10 @@ def search():
         query = query.filter(User.genre == genre)
     if location:
         query = query.filter(User.location == location)
-    if skill_level:
-        if user_type == 'musician':
-            query = query.filter(User.skill_level == skill_level)
-        else:
-            query = query.filter(User.recruiting_positions.like(f'%"skill_level": "{skill_level}"%'))
+    
+    # 실력 수준은 뮤지션 검색에서만 적용
+    if skill_level and user_type == 'musician':
+        query = query.filter(User.skill_level == skill_level)
 
     # 현재 로그인한 사용자 제외
     if current_user.is_authenticated:

@@ -21,7 +21,7 @@
                 <!-- user_type을 hidden 필드로 유지 -->
                 <input type="hidden" name="user_type" value="{{ request.args.get('user_type', '') }}">
                 
-                <div class="col-md-3">
+                <div class="col-md-4">
                     <label class="form-label">악기</label>
                     <select class="form-select" name="instrument">
                         <option value="">전체</option>
@@ -32,18 +32,18 @@
                         <option value="keyboard" {% if request.args.get('instrument') == 'keyboard' %}selected{% endif %}>키보드</option>
                     </select>
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-4">
                     <label class="form-label">장르</label>
                     <select class="form-select" name="genre">
                         <option value="">전체</option>
                         <option value="rock" {% if request.args.get('genre') == 'rock' %}selected{% endif %}>록</option>
                         <option value="jazz" {% if request.args.get('genre') == 'jazz' %}selected{% endif %}>재즈</option>
                         <option value="pop" {% if request.args.get('genre') == 'pop' %}selected{% endif %}>팝</option>
-                        <option value="metal" {% if request.args.get('genre') == 'metal' %}selected{% endif %}>메탈</option>
-                        <option value="blues" {% if request.args.get('genre') == 'blues' %}selected{% endif %}>블루스</option>
+                        <option value="metal" {% if request.args.get('metal') == 'metal' %}selected{% endif %}>메탈</option>
+                        <option value="blues" {% if request.args.get('blues') == 'blues' %}selected{% endif %}>블루스</option>
                     </select>
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-4">
                     <label class="form-label">지역</label>
                     <select class="form-select" name="location">
                         <option value="">전체</option>
@@ -54,7 +54,8 @@
                         <option value="daejeon" {% if request.args.get('location') == 'daejeon' %}selected{% endif %}>대전</option>
                     </select>
                 </div>
-                <div class="col-md-3">
+                {% if request.args.get('user_type') == 'musician' %}
+                <div class="col-md-4">
                     <label class="form-label">실력 수준</label>
                     <select class="form-select" name="skill_level">
                         <option value="">전체</option>
@@ -64,6 +65,7 @@
                         <option value="professional" {% if request.args.get('skill_level') == 'professional' %}selected{% endif %}>전문가</option>
                     </select>
                 </div>
+                {% endif %}
                 <div class="col-12">
                     <button type="submit" class="btn btn-primary">필터 적용</button>
                     <a href="{{ url_for('search', user_type=request.args.get('user_type', '')) }}" class="btn btn-outline-secondary">필터 초기화</a>
@@ -86,7 +88,7 @@
                                     {% if user.location %}{{ user.location }}{% endif %}
                                 </h6>
                             </div>
-                            {% if user.skill_level %}
+                            {% if user.user_type == 'musician' and user.skill_level %}
                             <span class="badge bg-primary">
                                 {% if user.skill_level == 'beginner' %}입문
                                 {% elif user.skill_level == 'intermediate' %}중급
