@@ -201,22 +201,76 @@
             <div class="card">
                 <div class="card-body">
                     <h5 class="card-title">최근 활동</h5>
+                    {% if recent_activities %}
                     <div class="list-group">
-                        <a href="#" class="list-group-item list-group-item-action">
+                        {% for activity in recent_activities %}
+                        <div class="list-group-item">
                             <div class="d-flex w-100 justify-content-between">
-                                <h6 class="mb-1">새로운 메시지</h6>
-                                <small>3일 전</small>
+                                <h6 class="mb-1">
+                                    {% if activity.type == 'message_received' %}
+                                        {% if activity.subtype == '가입 신청' %}
+                                            <span class="text-primary">{{ activity.related_user.username }}</span>님이 밴드 가입을 신청했습니다
+                                        {% else %}
+                                            <span class="text-primary">{{ activity.related_user.username }}</span> 밴드에서 초대했습니다
+                                        {% endif %}
+                                    {% elif activity.type == 'message_sent' %}
+                                        {% if activity.subtype == '가입 신청' %}
+                                            <span class="text-primary">{{ activity.related_user.username }}</span> 밴드에 가입 신청을 보냈습니다
+                                        {% else %}
+                                            <span class="text-primary">{{ activity.related_user.username }}</span>님을 밴드에 초대했습니다
+                                        {% endif %}
+                                    {% elif activity.type == 'joined_band' %}
+                                        <span class="text-primary">{{ activity.related_user.username }}</span> 밴드에 가입했습니다
+                                    {% elif activity.type == 'new_member' %}
+                                        <span class="text-primary">{{ activity.related_user.username }}</span>님이 밴드에 합류했습니다
+                                    {% endif %}
+                                </h6>
+                                <small class="text-muted">
+                                    {% set time_diff = (now - activity.date).total_seconds() %}
+                                    {% if time_diff < 60 %}
+                                        방금 전
+                                    {% elif time_diff < 3600 %}
+                                        {{ (time_diff / 60)|int }}분 전
+                                    {% elif time_diff < 86400 %}
+                                        {{ (time_diff / 3600)|int }}시간 전
+                                    {% elif time_diff < 604800 %}
+                                        {{ (time_diff / 86400)|int }}일 전
+                                    {% else %}
+                                        {{ activity.date.strftime('%Y-%m-%d') }}
+                                    {% endif %}
+                                </small>
                             </div>
-                            <p class="mb-1">새로운 밴드 멤버로부터 메시지가 도착했습니다.</p>
-                        </a>
-                        <a href="#" class="list-group-item list-group-item-action">
-                            <div class="d-flex w-100 justify-content-between">
-                                <h6 class="mb-1">매칭 제안</h6>
-                                <small>1주일 전</small>
-                            </div>
-                            <p class="mb-1">새로운 밴드에서 매칭을 제안했습니다.</p>
-                        </a>
+                            {% if activity.type in ['message_received', 'message_sent'] %}
+                                <p class="mb-1">
+                                    {% if activity.status == '대기중' %}
+                                        <span class="badge bg-warning">대기중</span>
+                                    {% elif activity.status == '수락됨' %}
+                                        <span class="badge bg-success">수락됨</span>
+                                    {% else %}
+                                        <span class="badge bg-danger">거절됨</span>
+                                    {% endif %}
+                                    {% if activity.message.content %}
+                                        {{ activity.message.content[:100] }}{% if activity.message.content|length > 100 %}...{% endif %}
+                                    {% endif %}
+                                </p>
+                            {% elif activity.type in ['joined_band', 'new_member'] %}
+                                <p class="mb-1">포지션: {{ activity.position }}</p>
+                            {% endif %}
+                            {% if activity.type in ['message_received', 'message_sent'] %}
+                                <small>
+                                    <a href="{{ url_for('view_message', message_id=activity.message.id) }}" class="text-primary">
+                                        자세히 보기
+                                    </a>
+                                </small>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
                     </div>
+                    {% else %}
+                    <div class="alert alert-info mb-0">
+                        아직 활동 내역이 없습니다.
+                    </div>
+                    {% endif %}
                 </div>
             </div>
         </div>

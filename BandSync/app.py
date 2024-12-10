@@ -120,6 +120,90 @@ class User(UserMixin, db.Model):
             status='pending'
         ).first() is not None
 
+    def get_recent_activities(self, limit=5):
+        """최근 활동 내역을 가져옵니다."""
+        # 받은 메시지
+        received_messages = Message.query.filter_by(
+            receiver_id=self.id
+        ).order_by(Message.created_at.desc()).limit(limit).all()
+
+        # 보낸 메시지
+        sent_messages = Message.query.filter_by(
+            sender_id=self.id
+        ).order_by(Message.created_at.desc()).limit(limit).all()
+
+        # 멤버십 변경 내역 (밴드에 가입했거나, 멤버를 받아들인 경우)
+        if self.user_type == 'musician':
+            memberships = BandMembership.query.filter_by(
+                member_id=self.id
+            ).order_by(BandMembership.joined_at.desc()).limit(limit).all()
+        else:
+            memberships = BandMembership.query.filter_by(
+                band_id=self.id
+            ).order_by(BandMembership.joined_at.desc()).limit(limit).all()
+
+        # 활동 내역 통합 및 정렬
+        activities = []
+        
+        # 받은 메시지 처리
+        for msg in received_messages:
+            activity_type = '가입 신청' if msg.message_type == 'application' else '멤버 초대'
+            if msg.status == 'pending':
+                status = '대기중'
+            elif msg.status == 'accepted':
+                status = '수락됨'
+            else:
+                status = '거절됨'
+            
+            activities.append({
+                'type': 'message_received',
+                'subtype': activity_type,
+                'status': status,
+                'date': msg.created_at,
+                'related_user': msg.sender,
+                'message': msg
+            })
+
+        # 보낸 메시지 처리
+        for msg in sent_messages:
+            activity_type = '가입 신청' if msg.message_type == 'application' else '멤버 초대'
+            if msg.status == 'pending':
+                status = '대기중'
+            elif msg.status == 'accepted':
+                status = '수락됨'
+            else:
+                status = '거절됨'
+            
+            activities.append({
+                'type': 'message_sent',
+                'subtype': activity_type,
+                'status': status,
+                'date': msg.created_at,
+                'related_user': msg.receiver,
+                'message': msg
+            })
+
+        # 멤버십 변경 처리
+        for membership in memberships:
+            if self.user_type == 'musician':
+                activities.append({
+                    'type': 'joined_band',
+                    'date': membership.joined_at,
+                    'related_user': membership.band,
+                    'position': membership.position
+                })
+            else:
+                activities.append({
+                    'type': 'new_member',
+                    'date': membership.joined_at,
+                    'related_user': membership.member,
+                    'position': membership.position
+                })
+
+        # 날짜순으로 정렬
+        activities.sort(key=lambda x: x['date'], reverse=True)
+        return activities[:limit]
+
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
@@ -358,10 +442,15 @@ def dashboard():
         bands = None
         members = current_user.get_members()  # 밴드 멤버 목록
     
+    # 최근 활동 가져오기
+    recent_activities = current_user.get_recent_activities()
+    
     return render_template('dashboard.html', 
                          recommendations=recommendations,
                          bands=bands,
-                         members=members if current_user.user_type == 'band' else None)
+                         members=members if current_user.user_type == 'band' else None,
+                         recent_activities=recent_activities,
+                         now=datetime.utcnow())
 
 @app.route('/profile/<int:user_id>')
 def view_profile(user_id):
