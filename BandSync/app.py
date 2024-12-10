@@ -72,6 +72,12 @@ class User(UserMixin, db.Model):
     band_size = db.Column(db.Integer)
     preferred_age_range = db.Column(db.String(50))
 
+    # 연습실 리뷰 관계 추가
+    practice_room_reviews = db.relationship('PracticeRoomReview', 
+                                          foreign_keys='PracticeRoomReview.user_id',
+                                          backref='user',
+                                          lazy=True)
+
     def get_recruiting_positions(self):
         if self.recruiting_positions:
             return json.loads(self.recruiting_positions)
@@ -558,6 +564,9 @@ class PracticeRoomReview(db.Model):
     rating = db.Column(db.Integer, nullable=False)  # 1-5 평점
     comment = db.Column(db.Text)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # 관계 설정
+    reviewer = db.relationship('User', foreign_keys=[user_id])
 
 @app.route('/practice-rooms')
 def practice_rooms():
