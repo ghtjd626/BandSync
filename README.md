@@ -195,23 +195,19 @@ BandSync/
 
 ## 주요 기능 스크린샷 📸
 
-### 메인 페이지
+<img width="1511" alt="스크린샷 2024-12-11 오전 1 50 38" src="https://github.com/user-attachments/assets/80bffbb6-508c-4e48-a91f-cc072c5c5c47">
+<img width="1512" alt="스크린샷 2024-12-11 오전 1 59 37" src="https://github.com/user-attachments/assets/68a11f1f-f8ba-444c-ab2d-c62c09bb4bad">
+<img width="1512" alt="스크린샷 2024-12-11 오전 2 06 09" src="https://github.com/user-attachments/assets/8f1643e0-1a27-4358-b39a-aece787ab652">
+<img width="1512" alt="스크린샷 2024-12-11 오전 2 06 22" src="https://github.com/user-attachments/assets/ed2c3d5d-2666-437f-9880-2d4fdbfd100c">
+<img width="1509" alt="스크린샷 2024-12-11 오전 2 06 40" src="https://github.com/user-attachments/assets/81627cd5-6364-46f7-a016-408f647a50fb">
+<img width="1512" alt="스크린샷 2024-12-11 오전 2 06 52" src="https://github.com/user-attachments/assets/c9b27d60-1026-4a09-941b-b70abe5e0eba">
+<img width="786" alt="스크린샷 2024-12-11 오전 2 07 01" src="https://github.com/user-attachments/assets/e2089825-f0da-4b80-9f15-5d2a5ca68c9d">
+<img width="1511" alt="스크린샷 2024-12-11 오전 2 07 15" src="https://github.com/user-attachments/assets/cc3292f2-cad2-42c3-99d4-125ef19cc03d">
+<img width="1512" alt="스크린샷 2024-12-11 오전 2 07 24" src="https://github.com/user-attachments/assets/61374c2f-4d35-4f25-95fb-d2c4bec8fc8d">
+<img width="1512" alt="스크린샷 2024-12-11 오전 2 08 07" src="https://github.com/user-attachments/assets/7cd3dda8-d11d-48c9-ac26-3438eb1bd01f">
+<img width="1512" alt="스크린샷 2024-12-11 오전 2 08 26" src="https://github.com/user-attachments/assets/b0ac1f50-8614-4fb7-b323-e0589e15c039">
+<img width="1509" alt="스크린샷 2024-12-11 오전 2 08 38" src="https://github.com/user-attachments/assets/1d60d64c-cf32-4a04-9044-1095e5f6c826">
 
-![메인 페이지](![image](https://github.com/user-attachments/assets/ebf7b246-3798-43bd-b036-29f7ef2a63aa))
-
-### 밴드/뮤지션 검색
-
-![검색 페이지](<img width="1512" alt="image" src="https://github.com/user-attachments/assets/696e3b29-73a7-423a-b61c-488b94e0954a">
-)
-![검색 페이지](<img width="1512" alt="image" src="https://github.com/user-attachments/assets/696e3b29-73a7-423a-b61c-488b94e0954a">
-)
-
-### 연습실 정보
-
-![연습실 정보](<img width="1512" alt="image" src="https://github.com/user-attachments/assets/4087d8f1-a528-49bb-94c5-56a638e952d9">
-)
-![연습실 정보](<img width="1512" alt="image" src="https://github.com/user-attachments/assets/6eae5eec-300b-4c60-a0ba-f848ef28e664">
-)
 
 
 ## 향후 계획 🚀
