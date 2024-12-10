@@ -130,7 +130,7 @@
                             {% endif %}
                         </p>
                         <div class="d-flex justify-content-between align-items-center">
-                            <button class="btn btn-outline-primary btn-sm">프로필 보기</button>
+                            <a href="{{ url_for('view_profile', user_id=user.id) }}" class="btn btn-outline-primary btn-sm">프로필 보기</a>
                             {% if current_user.is_authenticated %}
                             <button class="btn btn-success btn-sm">메시지 보내기</button>
                             {% endif %}

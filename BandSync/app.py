@@ -276,6 +276,11 @@ def dashboard():
     recommendations = get_recommendations()
     return render_template('dashboard.html', recommendations=recommendations)
 
+@app.route('/profile/<int:user_id>')
+def view_profile(user_id):
+    user = User.query.get_or_404(user_id)
+    return render_template('profile.html', user=user)
+
 def init_db():
     with app.app_context():
         # 데이터베이스 테이블 생성

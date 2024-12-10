@@ -1,0 +1,99 @@
+{% extends "base.html" %} {% block title %} {{ user.username }}의 프로필 {%
+endblock %} {% block content %}
+<div class="container">
+  <div class="row justify-content-center">
+    <div class="col-md-8">
+      <div class="card">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-start mb-4">
+            <div>
+              <h2 class="card-title mb-1">{{ user.username }}</h2>
+              <p class="text-muted mb-0">
+                {% if user.user_type == 'musician' %}뮤지션{% else %}밴드{%
+                endif %} {% if user.location %} · {{ user.location }}{% endif %}
+              </p>
+            </div>
+            {% if user.user_type == 'musician' and user.skill_level %}
+            <span class="badge bg-primary">
+              {% if user.skill_level == 'beginner' %}입문 {% elif
+              user.skill_level == 'intermediate' %}중급 {% elif user.skill_level
+              == 'advanced' %}상급 {% elif user.skill_level == 'professional'
+              %}전문가 {% endif %}
+            </span>
+            {% endif %}
+          </div>
+
+          <div class="profile-info">
+            {% if user.user_type == 'musician' %}
+            <!-- 뮤지션 정보 -->
+            {% if user.instrument %}
+            <div class="mb-3">
+              <h5>주 악기</h5>
+              <p>{{ user.instrument }}</p>
+            </div>
+            {% endif %} {% else %}
+            <!-- 밴드 정보 -->
+            {% if user.band_size %}
+            <div class="mb-3">
+              <h5>현재 인원</h5>
+              <p>{{ user.band_size }}명</p>
+            </div>
+            {% endif %} {% if user.get_recruiting_positions() %}
+            <div class="mb-3">
+              <h5>모집 중인 포지션</h5>
+              <div class="row">
+                {% for position in user.get_recruiting_positions() %}
+                <div class="col-md-6 mb-2">
+                  <div class="card bg-light">
+                    <div class="card-body py-2">
+                      <h6 class="card-title mb-1">{{ position.instrument }}</h6>
+                      <p class="card-text small mb-0">
+                        요구 실력: {% if position.skill_level == 'beginner'
+                        %}입문 {% elif position.skill_level == 'intermediate'
+                        %}중급 {% elif position.skill_level == 'advanced' %}상급
+                        {% elif position.skill_level == 'professional' %}전문가
+                        {% endif %}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                {% endfor %}
+              </div>
+            </div>
+            {% endif %} {% if user.preferred_age_range %}
+            <div class="mb-3">
+              <h5>선호 연령대</h5>
+              <p>
+                {% if user.preferred_age_range == '10-20' %}10대-20대 {% elif
+                user.preferred_age_range == '20-30' %}20대-30대 {% elif
+                user.preferred_age_range == '30-40' %}30대-40대 {% elif
+                user.preferred_age_range == '40+' %}40대 이상 {% elif
+                user.preferred_age_range == 'any' %}무관 {% endif %}
+              </p>
+            </div>
+            {% endif %} {% endif %} {% if user.genre %}
+            <div class="mb-3">
+              <h5>선호 장르</h5>
+              <p>{{ user.genre }}</p>
+            </div>
+            {% endif %} {% if user.bio %}
+            <div class="mb-3">
+              <h5>소개</h5>
+              <p>{{ user.bio }}</p>
+            </div>
+            {% endif %}
+          </div>
+
+          {% if current_user.is_authenticated and current_user.id != user.id %}
+          <div class="mt-4 d-grid gap-2">
+            <button class="btn btn-primary" onclick="location.href='#'">
+              메시지 보내기
+            </button>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
