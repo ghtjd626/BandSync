@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+
+{% block title %}프로필 수정{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-body">
+                    <h2 class="card-title mb-4">프로필 수정</h2>
+                    <form method="POST" action="{{ url_for('edit_profile') }}">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="username" class="form-label">사용자 이름</label>
+                                <input type="text" class="form-control" id="username" name="username" value="{{ current_user.username }}" readonly>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="email" class="form-label">이메일</label>
+                                <input type="email" class="form-control" id="email" name="email" value="{{ current_user.email }}" readonly>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="instrument" class="form-label">주 악기</label>
+                                <select class="form-select" id="instrument" name="instrument">
+                                    <option value="">선택해주세요</option>
+                                    <option value="guitar" {% if current_user.instrument == 'guitar' %}selected{% endif %}>기타</option>
+                                    <option value="bass" {% if current_user.instrument == 'bass' %}selected{% endif %}>베이스</option>
+                                    <option value="drums" {% if current_user.instrument == 'drums' %}selected{% endif %}>드럼</option>
+                                    <option value="vocals" {% if current_user.instrument == 'vocals' %}selected{% endif %}>보컬</option>
+                                    <option value="keyboard" {% if current_user.instrument == 'keyboard' %}selected{% endif %}>키보드</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="genre" class="form-label">선호 장르</label>
+                                <select class="form-select" id="genre" name="genre">
+                                    <option value="">선택해주세요</option>
+                                    <option value="rock" {% if current_user.genre == 'rock' %}selected{% endif %}>록</option>
+                                    <option value="jazz" {% if current_user.genre == 'jazz' %}selected{% endif %}>재즈</option>
+                                    <option value="pop" {% if current_user.genre == 'pop' %}selected{% endif %}>팝</option>
+                                    <option value="metal" {% if current_user.genre == 'metal' %}selected{% endif %}>메탈</option>
+                                    <option value="blues" {% if current_user.genre == 'blues' %}selected{% endif %}>블루스</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="location" class="form-label">활동 지역</label>
+                                <select class="form-select" id="location" name="location">
+                                    <option value="">선택해주세요</option>
+                                    <option value="seoul" {% if current_user.location == 'seoul' %}selected{% endif %}>서울</option>
+                                    <option value="busan" {% if current_user.location == 'busan' %}selected{% endif %}>부산</option>
+                                    <option value="incheon" {% if current_user.location == 'incheon' %}selected{% endif %}>인천</option>
+                                    <option value="daegu" {% if current_user.location == 'daegu' %}selected{% endif %}>대구</option>
+                                    <option value="daejeon" {% if current_user.location == 'daejeon' %}selected{% endif %}>대전</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="skill_level" class="form-label">실력 수준</label>
+                                <select class="form-select" id="skill_level" name="skill_level">
+                                    <option value="">선택해주세요</option>
+                                    <option value="beginner" {% if current_user.skill_level == 'beginner' %}selected{% endif %}>입문</option>
+                                    <option value="intermediate" {% if current_user.skill_level == 'intermediate' %}selected{% endif %}>중급</option>
+                                    <option value="advanced" {% if current_user.skill_level == 'advanced' %}selected{% endif %}>상급</option>
+                                    <option value="professional" {% if current_user.skill_level == 'professional' %}selected{% endif %}>전문가</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="age" class="form-label">나이</label>
+                            <input type="number" class="form-control" id="age" name="age" value="{{ current_user.age or '' }}" min="1" max="100">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="bio" class="form-label">자기소개</label>
+                            <textarea class="form-control" id="bio" name="bio" rows="4">{{ current_user.bio or '' }}</textarea>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">프로필 저장</button>
+                            <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary">취소</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 
