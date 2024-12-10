@@ -4,15 +4,27 @@
 
 {% block content %}
 <div class="container">
-    <h2 class="mb-4">검색 결과</h2>
+    <h2 class="mb-4">
+        {% if request.args.get('user_type') == 'band' %}
+            밴드 찾기
+        {% elif request.args.get('user_type') == 'musician' %}
+            멤버 찾기
+        {% else %}
+            검색 결과
+        {% endif %}
+    </h2>
     
     <!-- 검색 필터 -->
     <div class="card mb-4">
         <div class="card-body">
             <form method="GET" action="{{ url_for('search') }}" class="row g-3">
+                <!-- user_type을 hidden 필드로 유지 -->
+                <input type="hidden" name="user_type" value="{{ request.args.get('user_type', '') }}">
+                
                 <div class="col-md-3">
+                    <label class="form-label">악기</label>
                     <select class="form-select" name="instrument">
-                        <option value="">악기 선택</option>
+                        <option value="">전체</option>
                         <option value="guitar" {% if request.args.get('instrument') == 'guitar' %}selected{% endif %}>기타</option>
                         <option value="bass" {% if request.args.get('instrument') == 'bass' %}selected{% endif %}>베이스</option>
                         <option value="drums" {% if request.args.get('instrument') == 'drums' %}selected{% endif %}>드럼</option>
@@ -21,8 +33,9 @@
                     </select>
                 </div>
                 <div class="col-md-3">
+                    <label class="form-label">장르</label>
                     <select class="form-select" name="genre">
-                        <option value="">장르 선택</option>
+                        <option value="">전체</option>
                         <option value="rock" {% if request.args.get('genre') == 'rock' %}selected{% endif %}>록</option>
                         <option value="jazz" {% if request.args.get('genre') == 'jazz' %}selected{% endif %}>재즈</option>
                         <option value="pop" {% if request.args.get('genre') == 'pop' %}selected{% endif %}>팝</option>
@@ -31,8 +44,9 @@
                     </select>
                 </div>
                 <div class="col-md-3">
+                    <label class="form-label">지역</label>
                     <select class="form-select" name="location">
-                        <option value="">지역 선택</option>
+                        <option value="">전체</option>
                         <option value="seoul" {% if request.args.get('location') == 'seoul' %}selected{% endif %}>서울</option>
                         <option value="busan" {% if request.args.get('location') == 'busan' %}selected{% endif %}>부산</option>
                         <option value="incheon" {% if request.args.get('location') == 'incheon' %}selected{% endif %}>인천</option>
@@ -41,7 +55,18 @@
                     </select>
                 </div>
                 <div class="col-md-3">
-                    <button type="submit" class="btn btn-primary w-100">필터 적용</button>
+                    <label class="form-label">실력 수준</label>
+                    <select class="form-select" name="skill_level">
+                        <option value="">전체</option>
+                        <option value="beginner" {% if request.args.get('skill_level') == 'beginner' %}selected{% endif %}>입문</option>
+                        <option value="intermediate" {% if request.args.get('skill_level') == 'intermediate' %}selected{% endif %}>중급</option>
+                        <option value="advanced" {% if request.args.get('skill_level') == 'advanced' %}selected{% endif %}>상급</option>
+                        <option value="professional" {% if request.args.get('skill_level') == 'professional' %}selected{% endif %}>전문가</option>
+                    </select>
+                </div>
+                <div class="col-12">
+                    <button type="submit" class="btn btn-primary">필터 적용</button>
+                    <a href="{{ url_for('search', user_type=request.args.get('user_type', '')) }}" class="btn btn-outline-secondary">필터 초기화</a>
                 </div>
             </form>
         </div>
@@ -58,27 +83,52 @@
                             <div>
                                 <h5 class="card-title">{{ user.username }}</h5>
                                 <h6 class="card-subtitle mb-2 text-muted">
-                                    {% if user.user_type == 'musician' %}뮤지션{% else %}밴드{% endif %}
+                                    {% if user.location %}{{ user.location }}{% endif %}
                                 </h6>
                             </div>
-                            <span class="badge bg-primary">{{ user.location }}</span>
+                            {% if user.skill_level %}
+                            <span class="badge bg-primary">
+                                {% if user.skill_level == 'beginner' %}입문
+                                {% elif user.skill_level == 'intermediate' %}중급
+                                {% elif user.skill_level == 'advanced' %}상급
+                                {% elif user.skill_level == 'professional' %}전문가
+                                {% endif %}
+                            </span>
+                            {% endif %}
                         </div>
                         <p class="card-text">
-                            {% if user.instrument %}
-                            <strong>악기:</strong> {{ user.instrument }}<br>
+                            {% if user.user_type == 'musician' %}
+                                {% if user.instrument %}
+                                <strong>악기:</strong> {{ user.instrument }}<br>
+                                {% endif %}
+                            {% else %}
+                                {% if user.band_size %}
+                                <strong>현재 인원:</strong> {{ user.band_size }}명<br>
+                                {% endif %}
+                                {% if user.get_recruiting_positions() %}
+                                <strong>모집 포지션:</strong>
+                                <ul class="list-unstyled mb-0">
+                                    {% for position in user.get_recruiting_positions() %}
+                                    <li>- {{ position.instrument }} 
+                                        ({% if position.skill_level == 'beginner' %}입문
+                                        {% elif position.skill_level == 'intermediate' %}중급
+                                        {% elif position.skill_level == 'advanced' %}상급
+                                        {% elif position.skill_level == 'professional' %}전문가
+                                        {% endif %})
+                                    </li>
+                                    {% endfor %}
+                                </ul>
+                                {% endif %}
                             {% endif %}
                             {% if user.genre %}
                             <strong>장르:</strong> {{ user.genre }}<br>
-                            {% endif %}
-                            {% if user.skill_level %}
-                            <strong>실력:</strong> {{ user.skill_level }}<br>
                             {% endif %}
                             {% if user.bio %}
                             <strong>소개:</strong> {{ user.bio[:100] }}{% if user.bio|length > 100 %}...{% endif %}
                             {% endif %}
                         </p>
                         <div class="d-flex justify-content-between align-items-center">
-                            <a href="#" class="btn btn-outline-primary">프로필 보기</a>
+                            <button class="btn btn-outline-primary btn-sm">프로필 보기</button>
                             {% if current_user.is_authenticated %}
                             <button class="btn btn-success btn-sm">메시지 보내기</button>
                             {% endif %}
@@ -91,6 +141,11 @@
             <div class="col-12">
                 <div class="alert alert-info">
                     검색 조건에 맞는 결과가 없습니다.
+                    {% if request.args.get('user_type') == 'band' %}
+                        다른 조건으로 밴드를 검색해보세요.
+                    {% else %}
+                        다른 조건으로 멤버를 검색해보세요.
+                    {% endif %}
                 </div>
             </div>
         {% endif %}

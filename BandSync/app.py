@@ -54,26 +54,36 @@ def index():
 @app.route('/search')
 def search():
     # 검색 매개변수 가져오기
+    user_type = request.args.get('user_type', '')  # 기본값을 빈 문자열로 설정
     instrument = request.args.get('instrument')
     genre = request.args.get('genre')
     location = request.args.get('location')
-    user_type = request.args.get('user_type')
     skill_level = request.args.get('skill_level')
 
     # 기본 쿼리 생성
     query = User.query
 
-    # 검색 조건 적용
+    # user_type 필터링 (항상 적용)
     if user_type:
         query = query.filter(User.user_type == user_type)
+
+    # 나머지 검색 조건 적용
     if instrument:
-        query = query.filter(User.instrument == instrument)
+        # 뮤지션의 경우 직접 악기 비교, 밴드의 경우 모집 포지션에서 검색
+        if user_type == 'musician':
+            query = query.filter(User.instrument == instrument)
+        else:
+            query = query.filter(User.recruiting_positions.like(f'%"instrument": "{instrument}"%'))
+    
     if genre:
         query = query.filter(User.genre == genre)
     if location:
         query = query.filter(User.location == location)
     if skill_level:
-        query = query.filter(User.skill_level == skill_level)
+        if user_type == 'musician':
+            query = query.filter(User.skill_level == skill_level)
+        else:
+            query = query.filter(User.recruiting_positions.like(f'%"skill_level": "{skill_level}"%'))
 
     # 현재 로그인한 사용자 제외
     if current_user.is_authenticated:
