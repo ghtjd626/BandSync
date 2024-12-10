@@ -86,8 +86,8 @@ endblock %} {% block content %}
 
           {% if current_user.is_authenticated and current_user.id != user.id %}
           <div class="mt-4 d-grid gap-2">
-            {% if user.user_type == 'band' %} {% if
-            current_user.is_member_of(user.id) %}
+            {% if user.user_type == 'band' and current_user.user_type ==
+            'musician' %} {% if current_user.is_member_of(user.id) %}
             <button class="btn btn-secondary" disabled>
               이미 가입된 밴드입니다
             </button>
@@ -101,7 +101,8 @@ endblock %} {% block content %}
             >
               가입 신청하기
             </button>
-            {% endif %} {% else %} {# user is musician #} {% if
+            {% endif %} {% elif user.user_type == 'musician' and
+            current_user.user_type == 'band' %} {% if
             current_user.has_member(user.id) %}
             <button class="btn btn-secondary" disabled>
               이미 밴드 멤버입니다
@@ -126,7 +127,9 @@ endblock %} {% block content %}
 </div>
 
 <!-- 메시지 모달 -->
-{% if current_user.is_authenticated and current_user.id != user.id %}
+{% if current_user.is_authenticated and current_user.id != user.id and
+((user.user_type == 'band' and current_user.user_type == 'musician') or
+(user.user_type == 'musician' and current_user.user_type == 'band')) %}
 <div class="modal fade" id="messageModal" tabindex="-1">
   <div class="modal-dialog">
     <div class="modal-content">
