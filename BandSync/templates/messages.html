@@ -1,0 +1,57 @@
+{% extends "base.html" %} {% block title %}메시지함{% endblock %} {% block
+content %}
+<div class="container">
+  <div class="row">
+    <div class="col-md-12">
+      <h2 class="mb-4">메시지함</h2>
+
+      {% if messages %}
+      <div class="list-group">
+        {% for message in messages %}
+        <a
+          href="{{ url_for('view_message', message_id=message.id) }}"
+          class="list-group-item list-group-item-action {% if not message.read and message.receiver_id == current_user.id %}bg-light{% endif %}"
+        >
+          <div class="d-flex w-100 justify-content-between">
+            <h5 class="mb-1">
+              {% if not message.read and message.receiver_id == current_user.id
+              %}
+              <span class="badge bg-primary me-2">NEW</span>
+              {% endif %} {{ message.subject }}
+            </h5>
+            <small>{{ message.created_at.strftime('%Y-%m-%d %H:%M') }}</small>
+          </div>
+          <p class="mb-1">
+            {{ message.content[:100] }}{% if message.content|length > 100
+            %}...{% endif %}
+          </p>
+          <div class="d-flex justify-content-between align-items-center">
+            <small>
+              {% if message.sender_id == current_user.id %} To: {{
+              message.receiver.username }} {% else %} From: {{
+              message.sender.username }} {% endif %}
+            </small>
+            <div>
+              {% if message.message_type == 'application' %}
+              <span class="badge bg-info">가입 신청</span>
+              {% elif message.message_type == 'invitation' %}
+              <span class="badge bg-success">멤버 초대</span>
+              {% endif %} {% if message.status == 'pending' %}
+              <span class="badge bg-warning">대기중</span>
+              {% elif message.status == 'accepted' %}
+              <span class="badge bg-success">수락됨</span>
+              {% elif message.status == 'rejected' %}
+              <span class="badge bg-danger">거절됨</span>
+              {% endif %}
+            </div>
+          </div>
+        </a>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="alert alert-info">메시지가 없습니다.</div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

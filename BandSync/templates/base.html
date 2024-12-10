@@ -32,6 +32,22 @@
               <a class="nav-link" href="{{ url_for('dashboard') }}">대시보드</a>
             </li>
             <li class="nav-item">
+              <a
+                class="nav-link position-relative"
+                href="{{ url_for('messages') }}"
+              >
+                메시지 {% set unread_count =
+                current_user.get_unread_messages_count() %} {% if unread_count >
+                0 %}
+                <span
+                  class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+                >
+                  {{ unread_count }}
+                </span>
+                {% endif %}
+              </a>
+            </li>
+            <li class="nav-item">
               <a class="nav-link" href="{{ url_for('logout') }}">로그아웃</a>
             </li>
             {% else %}

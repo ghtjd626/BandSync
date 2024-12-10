@@ -86,8 +86,13 @@ endblock %} {% block content %}
 
           {% if current_user.is_authenticated and current_user.id != user.id %}
           <div class="mt-4 d-grid gap-2">
-            <button class="btn btn-primary" onclick="location.href='#'">
-              메시지 보내기
+            <button
+              class="btn btn-primary"
+              data-bs-toggle="modal"
+              data-bs-target="#messageModal"
+            >
+              {% if user.user_type == 'band' %} 가입 신청하기 {% else %} 멤버로
+              초대하기 {% endif %}
             </button>
           </div>
           {% endif %}
@@ -96,4 +101,91 @@ endblock %} {% block content %}
     </div>
   </div>
 </div>
-{% endblock %}
+
+<!-- 메시지 모달 -->
+{% if current_user.is_authenticated and current_user.id != user.id %}
+<div class="modal fade" id="messageModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">
+          {% if user.user_type == 'band' %} 밴드 가입 신청 {% else %} 멤버 초대
+          {% endif %}
+        </h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+        ></button>
+      </div>
+      <div class="modal-body">
+        <form id="messageForm">
+          <div class="mb-3">
+            <label for="subject" class="form-label">제목</label>
+            <input
+              type="text"
+              class="form-control"
+              id="subject"
+              required
+              value="{% if user.user_type == 'band' %}밴드 가입 신청{% else %}멤버 초대{% endif %}"
+            />
+          </div>
+          <div class="mb-3">
+            <label for="content" class="form-label">메시지</label>
+            <textarea
+              class="form-control"
+              id="content"
+              rows="4"
+              required
+            ></textarea>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+          취소
+        </button>
+        <button type="button" class="btn btn-primary" onclick="sendMessage()">
+          보내기
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function sendMessage() {
+    const subject = document.getElementById("subject").value;
+    const content = document.getElementById("content").value;
+    const messageType =
+      '{{ user.user_type == "band" and "application" or "invitation" }}';
+
+    if (!subject || !content) {
+      alert("모든 필드를 입력해주세요.");
+      return;
+    }
+
+    fetch('{{ url_for("send_message", receiver_id=user.id) }}', {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: `subject=${encodeURIComponent(
+        subject
+      )}&content=${encodeURIComponent(content)}&message_type=${messageType}`,
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.success) {
+          alert("메시지가 전송되었습니다.");
+          location.href = '{{ url_for("messages") }}';
+        } else {
+          alert(data.error || "메시지 전송에 실패했습니다.");
+        }
+      })
+      .catch((error) => {
+        alert("메시지 전송 중 오류가 발생했습니다.");
+      });
+  }
+</script>
+{% endif %} {% endblock %}

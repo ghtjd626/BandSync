@@ -1,8 +1,9 @@
-from flask import Flask, render_template, request, redirect, url_for, flash
+from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from sqlalchemy import or_
+from datetime import datetime
 import os, json
 
 app = Flask(__name__)
@@ -13,6 +14,21 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'
+
+# 데시지 모델
+class Message(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    sender_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    receiver_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    subject = db.Column(db.String(100), nullable=False)
+    content = db.Column(db.Text, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    read = db.Column(db.Boolean, default=False)
+    message_type = db.Column(db.String(20))  # 'application' 또는 'invitation'
+    status = db.Column(db.String(20), default='pending')  # pending, accepted, rejected
+
+    sender = db.relationship('User', foreign_keys=[sender_id], backref='sent_messages')
+    receiver = db.relationship('User', foreign_keys=[receiver_id], backref='received_messages')
 
 # 데이터베이스 모델
 class User(UserMixin, db.Model):
@@ -42,6 +58,14 @@ class User(UserMixin, db.Model):
 
     def set_recruiting_positions(self, positions):
         self.recruiting_positions = json.dumps(positions)
+
+    def get_unread_messages_count(self):
+        return Message.query.filter_by(receiver_id=self.id, read=False).count()
+
+    def get_messages(self):
+        return Message.query.filter(
+            or_(Message.receiver_id == self.id, Message.sender_id == self.id)
+        ).order_by(Message.created_at.desc()).all()
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -280,6 +304,80 @@ def dashboard():
 def view_profile(user_id):
     user = User.query.get_or_404(user_id)
     return render_template('profile.html', user=user)
+
+@app.route('/messages')
+@login_required
+def messages():
+    messages = current_user.get_messages()
+    return render_template('messages.html', messages=messages)
+
+@app.route('/send_message/<int:receiver_id>', methods=['POST'])
+@login_required
+def send_message(receiver_id):
+    receiver = User.query.get_or_404(receiver_id)
+    subject = request.form.get('subject')
+    content = request.form.get('content')
+    message_type = request.form.get('message_type')
+
+    if not all([subject, content, message_type]):
+        return jsonify({'success': False, 'error': '모든 필드를 입력해주세요.'}), 400
+
+    message = Message(
+        sender_id=current_user.id,
+        receiver_id=receiver_id,
+        subject=subject,
+        content=content,
+        message_type=message_type
+    )
+
+    try:
+        db.session.add(message)
+        db.session.commit()
+        return jsonify({'success': True})
+    except:
+        db.session.rollback()
+        return jsonify({'success': False, 'error': '메시지 전송에 실패했습니다.'}), 500
+
+@app.route('/message/<int:message_id>')
+@login_required
+def view_message(message_id):
+    message = Message.query.get_or_404(message_id)
+    if message.receiver_id == current_user.id and not message.read:
+        message.read = True
+        db.session.commit()
+    return render_template('message_detail.html', message=message)
+
+@app.route('/message/<int:message_id>/respond', methods=['POST'])
+@login_required
+def respond_to_message(message_id):
+    message = Message.query.get_or_404(message_id)
+    response = request.form.get('response')
+    
+    if message.receiver_id != current_user.id:
+        return jsonify({'success': False, 'error': '권한이 없습니다.'}), 403
+
+    if response not in ['accept', 'reject']:
+        return jsonify({'success': False, 'error': '잘못된 응답입니다.'}), 400
+
+    message.status = 'accepted' if response == 'accept' else 'rejected'
+    
+    # 응답 메시지 생성
+    response_message = Message(
+        sender_id=current_user.id,
+        receiver_id=message.sender_id,
+        subject=f"Re: {message.subject}",
+        content=f"{'수락' if response == 'accept' else '거절'}되었습니다.",
+        message_type=message.message_type,
+        status='completed'
+    )
+
+    try:
+        db.session.add(response_message)
+        db.session.commit()
+        return jsonify({'success': True})
+    except:
+        db.session.rollback()
+        return jsonify({'success': False, 'error': '응답 처리에 실패했습니다.'}), 500
 
 def init_db():
     with app.app_context():
