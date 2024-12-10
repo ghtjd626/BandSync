@@ -3,7 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from sqlalchemy import or_
-import os
+import os, json
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.urandom(24)
@@ -29,6 +29,19 @@ class User(UserMixin, db.Model):
     location = db.Column(db.String(100))
     age = db.Column(db.Integer)
     bio = db.Column(db.Text)
+
+    # 밴드 추가 정보
+    recruiting_positions = db.Column(db.Text)  # JSON 형식으로 저장: [{"instrument": "guitar", "skill_level": "intermediate"}]
+    band_size = db.Column(db.Integer)  # 현재 밴드 인원
+    preferred_age_range = db.Column(db.String(50))  # "20-30"과 같은 형식
+
+    def get_recruiting_positions(self):
+        if self.recruiting_positions:
+            return json.loads(self.recruiting_positions)
+        return []
+
+    def set_recruiting_positions(self, positions):
+        self.recruiting_positions = json.dumps(positions)
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -121,7 +134,7 @@ def get_recommendations():
 @login_required
 def edit_profile():
     if request.method == 'POST':
-        # 폼 데이터 가져오기
+        # 기본 정보 업데이트
         instrument = request.form.get('instrument')
         genre = request.form.get('genre')
         location = request.form.get('location')
@@ -131,19 +144,43 @@ def edit_profile():
 
         try:
             # 현재 사용자 정보 업데이트
-            current_user.instrument = instrument
             current_user.genre = genre
             current_user.location = location
-            current_user.skill_level = skill_level
             current_user.age = int(age) if age else None
             current_user.bio = bio
+
+            # 밴드 타입일 경우 추가 정보 업데이트
+            if current_user.user_type == 'band':
+                band_size = request.form.get('band_size')
+                preferred_age_range = request.form.get('preferred_age_range')
+                current_user.band_size = int(band_size) if band_size else None
+                current_user.preferred_age_range = preferred_age_range
+
+                # 모집 포지션 정보 처리
+                positions = []
+                instruments = request.form.getlist('recruiting_instrument[]')
+                skill_levels = request.form.getlist('recruiting_skill_level[]')
+                
+                for i in range(len(instruments)):
+                    if instruments[i]:  # 빈 값이 아닌 경우만 추가
+                        positions.append({
+                            'instrument': instruments[i],
+                            'skill_level': skill_levels[i] if i < len(skill_levels) else 'intermediate'
+                        })
+                
+                current_user.set_recruiting_positions(positions)
+            else:
+                # 뮤지션 타입일 경우
+                current_user.instrument = instrument
+                current_user.skill_level = skill_level
 
             db.session.commit()
             flash('프로필이 성공적으로 업데이트되었습니다.', 'success')
             return redirect(url_for('dashboard'))
-        except:
+        except Exception as e:
             db.session.rollback()
             flash('프로필 업데이트 중 오류가 발생했습니다.', 'error')
+            print(e)  # 디버깅용
 
     return render_template('edit_profile.html')
 
@@ -230,7 +267,46 @@ def dashboard():
     recommendations = get_recommendations()
     return render_template('dashboard.html', recommendations=recommendations)
 
-if __name__ == '__main__':
+def init_db():
     with app.app_context():
-        db.create_all()
+        # 데이터베이스 테이블 생성
+        db.drop_all()  # 기존 테이블 삭제
+        db.create_all()  # 새로운 테이블 생성
+        
+        # 테스트용 데이터 생성 (선택사항)
+        test_band = User(
+            username='test_band',
+            email='band@test.com',
+            user_type='band',
+            genre='rock',
+            location='seoul',
+            bio='테스트 밴드입니다.',
+            band_size=3,
+            preferred_age_range='20-30'
+        )
+        test_band.password_hash = generate_password_hash('password')
+        test_band.set_recruiting_positions([
+            {'instrument': 'guitar', 'skill_level': 'intermediate'},
+            {'instrument': 'drums', 'skill_level': 'advanced'}
+        ])
+
+        test_musician = User(
+            username='test_musician',
+            email='musician@test.com',
+            user_type='musician',
+            instrument='guitar',
+            genre='rock',
+            skill_level='intermediate',
+            location='seoul',
+            age=25,
+            bio='테스트 뮤지션입니다.'
+        )
+        test_musician.password_hash = generate_password_hash('password')
+
+        db.session.add(test_band)
+        db.session.add(test_musician)
+        db.session.commit()
+
+if __name__ == '__main__':
+    init_db()  # 데이터베이스 초기화
     app.run(debug=True) 

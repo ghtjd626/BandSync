@@ -12,21 +12,60 @@ content %}
             <strong>이메일:</strong> {{ current_user.email }}<br />
             <strong>계정 유형:</strong> {% if current_user.user_type ==
             'musician' %}뮤지션{% else %}밴드{% endif %}<br />
-            {% if current_user.instrument %}
-            <strong>악기:</strong> {{ current_user.instrument }}<br />
-            {% endif %} {% if current_user.genre %}
+            
+            {% if current_user.user_type == 'musician' %}
+                {% if current_user.instrument %}
+                <strong>악기:</strong> {{ current_user.instrument }}<br />
+                {% endif %}
+                {% if current_user.skill_level %}
+                <strong>실력:</strong> 
+                {% if current_user.skill_level == 'beginner' %}입문
+                {% elif current_user.skill_level == 'intermediate' %}중급
+                {% elif current_user.skill_level == 'advanced' %}상급
+                {% elif current_user.skill_level == 'professional' %}전문가
+                {% endif %}<br>
+                {% endif %}
+            {% else %}
+                {% if current_user.band_size %}
+                <strong>현재 인원:</strong> {{ current_user.band_size }}명<br>
+                {% endif %}
+                {% if current_user.preferred_age_range %}
+                <strong>선호 연령대:</strong> 
+                {% if current_user.preferred_age_range == '10-20' %}10대-20대
+                {% elif current_user.preferred_age_range == '20-30' %}20대-30대
+                {% elif current_user.preferred_age_range == '30-40' %}30대-40대
+                {% elif current_user.preferred_age_range == '40+' %}40대 이상
+                {% elif current_user.preferred_age_range == 'any' %}무관
+                {% endif %}<br>
+                {% endif %}
+                
+                {% if current_user.get_recruiting_positions() %}
+                <strong>모집 포지션:</strong><br>
+                <ul class="list-unstyled ms-3">
+                {% for position in current_user.get_recruiting_positions() %}
+                    <li>
+                        {{ position.instrument }}
+                        ({% if position.skill_level == 'beginner' %}입문
+                        {% elif position.skill_level == 'intermediate' %}중급
+                        {% elif position.skill_level == 'advanced' %}상급
+                        {% elif position.skill_level == 'professional' %}전문가
+                        {% endif %})
+                    </li>
+                {% endfor %}
+                </ul>
+                {% endif %}
+            {% endif %}
+
+            {% if current_user.genre %}
             <strong>장르:</strong> {{ current_user.genre }}<br />
-            {% endif %} {% if current_user.location %}
+            {% endif %}
+            {% if current_user.location %}
             <strong>지역:</strong> {{ current_user.location }}<br />
-            {% endif %} {% if current_user.skill_level %}
-            <strong>실력:</strong>
-            {% if current_user.skill_level == 'beginner' %}입문 {% elif
-            current_user.skill_level == 'intermediate' %}중급 {% elif
-            current_user.skill_level == 'advanced' %}상급 {% elif
-            current_user.skill_level == 'professional' %}전문가 {% endif %}<br />
-            {% endif %} {% if current_user.age %}
+            {% endif %}
+            {% if current_user.age %}
             <strong>나이:</strong> {{ current_user.age }}세<br />
-            {% endif %} {% if current_user.bio %}
+            {% endif %}
+            {% if current_user.bio %}
             <strong>소개:</strong><br />
             {{ current_user.bio }} {% endif %}
           </p>

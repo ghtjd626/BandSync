@@ -21,6 +21,8 @@
                             </div>
                         </div>
 
+                        {% if current_user.user_type == 'musician' %}
+                        <!-- 뮤지션 정보 -->
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label for="instrument" class="form-label">주 악기</label>
@@ -34,6 +36,103 @@
                                 </select>
                             </div>
                             <div class="col-md-6 mb-3">
+                                <label for="skill_level" class="form-label">실력 수준</label>
+                                <select class="form-select" id="skill_level" name="skill_level">
+                                    <option value="">선택해주세요</option>
+                                    <option value="beginner" {% if current_user.skill_level == 'beginner' %}selected{% endif %}>입문</option>
+                                    <option value="intermediate" {% if current_user.skill_level == 'intermediate' %}selected{% endif %}>중급</option>
+                                    <option value="advanced" {% if current_user.skill_level == 'advanced' %}selected{% endif %}>상급</option>
+                                    <option value="professional" {% if current_user.skill_level == 'professional' %}selected{% endif %}>전문가</option>
+                                </select>
+                            </div>
+                        </div>
+                        {% else %}
+                        <!-- 밴드 정보 -->
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="band_size" class="form-label">현재 밴드 인원</label>
+                                <input type="number" class="form-control" id="band_size" name="band_size" 
+                                       value="{{ current_user.band_size or '' }}" min="1" max="20">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="preferred_age_range" class="form-label">선호 연령대</label>
+                                <select class="form-select" id="preferred_age_range" name="preferred_age_range">
+                                    <option value="">선택해주세요</option>
+                                    <option value="10-20" {% if current_user.preferred_age_range == '10-20' %}selected{% endif %}>10대-20대</option>
+                                    <option value="20-30" {% if current_user.preferred_age_range == '20-30' %}selected{% endif %}>20대-30대</option>
+                                    <option value="30-40" {% if current_user.preferred_age_range == '30-40' %}selected{% endif %}>30대-40대</option>
+                                    <option value="40+" {% if current_user.preferred_age_range == '40+' %}selected{% endif %}>40대 이상</option>
+                                    <option value="any" {% if current_user.preferred_age_range == 'any' %}selected{% endif %}>무관</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- 모집 포지션 -->
+                        <div class="card mb-3">
+                            <div class="card-body">
+                                <h5 class="card-title">모집 포지션</h5>
+                                <div id="positions-container">
+                                    {% if current_user.get_recruiting_positions() %}
+                                        {% for position in current_user.get_recruiting_positions() %}
+                                        <div class="row position-row mb-2">
+                                            <div class="col-md-5">
+                                                <select class="form-select" name="recruiting_instrument[]">
+                                                    <option value="">악기 선택</option>
+                                                    <option value="guitar" {% if position.instrument == 'guitar' %}selected{% endif %}>기타</option>
+                                                    <option value="bass" {% if position.instrument == 'bass' %}selected{% endif %}>베이스</option>
+                                                    <option value="drums" {% if position.instrument == 'drums' %}selected{% endif %}>드럼</option>
+                                                    <option value="vocals" {% if position.instrument == 'vocals' %}selected{% endif %}>보컬</option>
+                                                    <option value="keyboard" {% if position.instrument == 'keyboard' %}selected{% endif %}>키보드</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-5">
+                                                <select class="form-select" name="recruiting_skill_level[]">
+                                                    <option value="">실력 수준</option>
+                                                    <option value="beginner" {% if position.skill_level == 'beginner' %}selected{% endif %}>입문</option>
+                                                    <option value="intermediate" {% if position.skill_level == 'intermediate' %}selected{% endif %}>중급</option>
+                                                    <option value="advanced" {% if position.skill_level == 'advanced' %}selected{% endif %}>상급</option>
+                                                    <option value="professional" {% if position.skill_level == 'professional' %}selected{% endif %}>전문가</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-2">
+                                                <button type="button" class="btn btn-danger btn-sm remove-position">삭제</button>
+                                            </div>
+                                        </div>
+                                        {% endfor %}
+                                    {% else %}
+                                        <div class="row position-row mb-2">
+                                            <div class="col-md-5">
+                                                <select class="form-select" name="recruiting_instrument[]">
+                                                    <option value="">악기 선택</option>
+                                                    <option value="guitar">기타</option>
+                                                    <option value="bass">베이스</option>
+                                                    <option value="drums">드럼</option>
+                                                    <option value="vocals">보컬</option>
+                                                    <option value="keyboard">키보드</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-5">
+                                                <select class="form-select" name="recruiting_skill_level[]">
+                                                    <option value="">실력 수준</option>
+                                                    <option value="beginner">입문</option>
+                                                    <option value="intermediate">중급</option>
+                                                    <option value="advanced">상급</option>
+                                                    <option value="professional">전문가</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-2">
+                                                <button type="button" class="btn btn-danger btn-sm remove-position">삭제</button>
+                                            </div>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <button type="button" class="btn btn-secondary btn-sm mt-2" id="add-position">포지션 추가</button>
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
                                 <label for="genre" class="form-label">선호 장르</label>
                                 <select class="form-select" id="genre" name="genre">
                                     <option value="">선택해주세요</option>
@@ -44,9 +143,6 @@
                                     <option value="blues" {% if current_user.genre == 'blues' %}selected{% endif %}>블루스</option>
                                 </select>
                             </div>
-                        </div>
-
-                        <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label for="location" class="form-label">활동 지역</label>
                                 <select class="form-select" id="location" name="location">
@@ -56,16 +152,6 @@
                                     <option value="incheon" {% if current_user.location == 'incheon' %}selected{% endif %}>인천</option>
                                     <option value="daegu" {% if current_user.location == 'daegu' %}selected{% endif %}>대구</option>
                                     <option value="daejeon" {% if current_user.location == 'daejeon' %}selected{% endif %}>대전</option>
-                                </select>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="skill_level" class="form-label">실력 수준</label>
-                                <select class="form-select" id="skill_level" name="skill_level">
-                                    <option value="">선택해주세요</option>
-                                    <option value="beginner" {% if current_user.skill_level == 'beginner' %}selected{% endif %}>입문</option>
-                                    <option value="intermediate" {% if current_user.skill_level == 'intermediate' %}selected{% endif %}>중급</option>
-                                    <option value="advanced" {% if current_user.skill_level == 'advanced' %}selected{% endif %}>상급</option>
-                                    <option value="professional" {% if current_user.skill_level == 'professional' %}selected{% endif %}>전문가</option>
                                 </select>
                             </div>
                         </div>
@@ -90,4 +176,57 @@
         </div>
     </div>
 </div>
+
+<!-- 포지션 추가/삭제를 위한 JavaScript -->
+{% if current_user.user_type == 'band' %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const container = document.getElementById('positions-container');
+    const addButton = document.getElementById('add-position');
+
+    // 포지션 추가
+    addButton.addEventListener('click', function() {
+        const newRow = document.createElement('div');
+        newRow.className = 'row position-row mb-2';
+        newRow.innerHTML = `
+            <div class="col-md-5">
+                <select class="form-select" name="recruiting_instrument[]">
+                    <option value="">악기 선택</option>
+                    <option value="guitar">기타</option>
+                    <option value="bass">베이스</option>
+                    <option value="drums">드럼</option>
+                    <option value="vocals">보컬</option>
+                    <option value="keyboard">키보드</option>
+                </select>
+            </div>
+            <div class="col-md-5">
+                <select class="form-select" name="recruiting_skill_level[]">
+                    <option value="">실력 수준</option>
+                    <option value="beginner">입문</option>
+                    <option value="intermediate">중급</option>
+                    <option value="advanced">상급</option>
+                    <option value="professional">전문가</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button type="button" class="btn btn-danger btn-sm remove-position">삭제</button>
+            </div>
+        `;
+        container.appendChild(newRow);
+    });
+
+    // 포지션 삭제
+    container.addEventListener('click', function(e) {
+        if (e.target.classList.contains('remove-position')) {
+            const row = e.target.closest('.position-row');
+            if (container.children.length > 1) {
+                row.remove();
+            } else {
+                alert('최소 하나의 포지션은 있어야 합니다.');
+            }
+        }
+    });
+});
+</script>
+{% endif %}
 {% endblock %} 
