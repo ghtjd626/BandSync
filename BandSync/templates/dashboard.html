@@ -1,172 +1,225 @@
-{% extends "base.html" %} {% block title %}대시보드{% endblock %} {% block
-content %}
+{% extends "base.html" %}
+
+{% block title %}대시보드{% endblock %}
+
+{% block content %}
 <div class="container">
-  <h1 class="mb-4">{{ current_user.username }}님의 대시보드</h1>
-
-  <div class="row">
-    <div class="col-md-4">
-      <div class="card mb-4">
-        <div class="card-body">
-          <h5 class="card-title">프로필 정보</h5>
-          <p class="card-text">
-            <strong>이메일:</strong> {{ current_user.email }}<br />
-            <strong>계정 유형:</strong> {% if current_user.user_type ==
-            'musician' %}뮤지션{% else %}밴드{% endif %}<br />
-            
-            {% if current_user.user_type == 'musician' %}
-                {% if current_user.instrument %}
-                <strong>악기:</strong> {{ current_user.instrument }}<br />
-                {% endif %}
-                {% if current_user.skill_level %}
-                <strong>실력:</strong> 
-                {% if current_user.skill_level == 'beginner' %}입문
-                {% elif current_user.skill_level == 'intermediate' %}중급
-                {% elif current_user.skill_level == 'advanced' %}상급
-                {% elif current_user.skill_level == 'professional' %}전문가
-                {% endif %}<br>
-                {% endif %}
-            {% else %}
-                {% if current_user.band_size %}
-                <strong>현재 인원:</strong> {{ current_user.band_size }}명<br>
-                {% endif %}
-                {% if current_user.preferred_age_range %}
-                <strong>선호 연령대:</strong> 
-                {% if current_user.preferred_age_range == '10-20' %}10대-20대
-                {% elif current_user.preferred_age_range == '20-30' %}20대-30대
-                {% elif current_user.preferred_age_range == '30-40' %}30대-40대
-                {% elif current_user.preferred_age_range == '40+' %}40대 이상
-                {% elif current_user.preferred_age_range == 'any' %}무관
-                {% endif %}<br>
-                {% endif %}
-                
-                {% if current_user.get_recruiting_positions() %}
-                <strong>모집 포지션:</strong><br>
-                <ul class="list-unstyled ms-3">
-                {% for position in current_user.get_recruiting_positions() %}
-                    <li>
-                        {{ position.instrument }}
-                        ({% if position.skill_level == 'beginner' %}입문
-                        {% elif position.skill_level == 'intermediate' %}중급
-                        {% elif position.skill_level == 'advanced' %}상급
-                        {% elif position.skill_level == 'professional' %}전문가
-                        {% endif %})
-                    </li>
-                {% endfor %}
-                </ul>
-                {% endif %}
-            {% endif %}
-
-            {% if current_user.genre %}
-            <strong>장르:</strong> {{ current_user.genre }}<br />
-            {% endif %}
-            {% if current_user.location %}
-            <strong>지역:</strong> {{ current_user.location }}<br />
-            {% endif %}
-            {% if current_user.age %}
-            <strong>나이:</strong> {{ current_user.age }}세<br />
-            {% endif %}
-            {% if current_user.bio %}
-            <strong>소개:</strong><br />
-            {{ current_user.bio }} {% endif %}
-          </p>
-          <div class="d-grid gap-2">
-            <a href="{{ url_for('edit_profile') }}" class="btn btn-primary"
-              >프로필 수정</a
-            >
-            <a
-              href="{{ url_for('search', user_type='band' if current_user.user_type == 'musician' else 'musician') }}"
-              class="btn btn-outline-primary"
-              >{% if current_user.user_type == 'musician' %}밴드{% else %}멤버{%
-              endif %} 찾기</a
-            >
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="col-md-8">
-      <div class="card mb-4">
-        <div class="card-body">
-          <h5 class="card-title">
-            추천 {% if current_user.user_type == 'musician' %}밴드{% else
-            %}멤버{% endif %}
-          </h5>
-          {% if recommendations %}
-          <div class="row">
-            {% for user in recommendations %}
-            <div class="col-md-6 mb-3">
-              <div class="card h-100">
+    <h1 class="mb-4">{{ current_user.username }}님의 대시보드</h1>
+    
+    <div class="row">
+        <!-- 프로필 정보 -->
+        <div class="col-md-4">
+            <div class="card mb-4">
                 <div class="card-body">
-                  <div class="d-flex justify-content-between align-items-start">
-                    <div>
-                      <h6 class="card-title">{{ user.username }}</h6>
-                      <p class="card-subtitle mb-2 text-muted">
-                        {% if user.location %}{{ user.location }}{% endif %}
-                      </p>
-                    </div>
-                    {% if user.skill_level %}
-                    <span class="badge bg-primary">
-                      {% if user.skill_level == 'beginner' %}입문 {% elif
-                      user.skill_level == 'intermediate' %}중급 {% elif
-                      user.skill_level == 'advanced' %}상급 {% elif
-                      user.skill_level == 'professional' %}전문가 {% endif %}
-                    </span>
-                    {% endif %}
-                  </div>
-                  <p class="card-text">
-                    {% if user.instrument %}
-                    <strong>악기:</strong> {{ user.instrument }}<br />
-                    {% endif %} {% if user.genre %}
-                    <strong>장르:</strong> {{ user.genre }}<br />
-                    {% endif %} {% if user.bio %}
-                    <strong>소개:</strong> {{ user.bio[:100] }}{% if
-                    user.bio|length > 100 %}...{% endif %} {% endif %}
-                  </p>
-                  <div
-                    class="d-flex justify-content-between align-items-center"
-                  >
-                    <a href="{{ url_for('view_profile', user_id=user.id) }}" class="btn btn-outline-primary btn-sm">프로필 보기</a>
-                    <button class="btn btn-success btn-sm">
-                      메시지 보내기
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-            {% endfor %}
-          </div>
-          {% else %}
-          <div class="alert alert-info">
-            아직 추천할 {% if current_user.user_type == 'musician' %}밴드{% else
-            %}멤버{% endif %}가 없습니다. 프로필 정보를 더 자세히 입력하시면 더
-            정확한 추천을 받으실 수 있습니다.
-          </div>
-          {% endif %}
-        </div>
-      </div>
+                    <h5 class="card-title">프로필 정보</h5>
+                    <p class="card-text">
+                        <strong>이메일:</strong> {{ current_user.email }}<br>
+                        <strong>계정 유형:</strong> {% if current_user.user_type == 'musician' %}뮤지션{% else %}밴드{% endif %}<br>
+                        
+                        {% if current_user.user_type == 'musician' %}
+                            {% if current_user.instrument %}
+                            <strong>악기:</strong> {{ current_user.instrument }}<br>
+                            {% endif %}
+                            {% if current_user.skill_level %}
+                            <strong>실력:</strong> 
+                            {% if current_user.skill_level == 'beginner' %}입문
+                            {% elif current_user.skill_level == 'intermediate' %}중급
+                            {% elif current_user.skill_level == 'advanced' %}상급
+                            {% elif current_user.skill_level == 'professional' %}전문가
+                            {% endif %}<br>
+                            {% endif %}
+                        {% else %}
+                            {% if current_user.band_size %}
+                            <strong>현재 인원:</strong> {{ current_user.band_size }}명<br>
+                            {% endif %}
+                            {% if current_user.preferred_age_range %}
+                            <strong>선호 연령대:</strong> 
+                            {% if current_user.preferred_age_range == '10-20' %}10대-20대
+                            {% elif current_user.preferred_age_range == '20-30' %}20대-30대
+                            {% elif current_user.preferred_age_range == '30-40' %}30대-40대
+                            {% elif current_user.preferred_age_range == '40+' %}40대 이상
+                            {% elif current_user.preferred_age_range == 'any' %}무관
+                            {% endif %}<br>
+                            {% endif %}
+                        {% endif %}
 
-      <div class="card">
-        <div class="card-body">
-          <h5 class="card-title">최근 활동</h5>
-          <div class="list-group">
-            <a href="#" class="list-group-item list-group-item-action">
-              <div class="d-flex w-100 justify-content-between">
-                <h6 class="mb-1">새로운 메시지</h6>
-                <small>3일 전</small>
-              </div>
-              <p class="mb-1">새로운 밴드 멤버로부터 메시지가 도착했습니다.</p>
-            </a>
-            <a href="#" class="list-group-item list-group-item-action">
-              <div class="d-flex w-100 justify-content-between">
-                <h6 class="mb-1">매칭 제안</h6>
-                <small>1주일 전</small>
-              </div>
-              <p class="mb-1">새로운 밴드에서 매칭을 제안했습니다.</p>
-            </a>
-          </div>
+                        {% if current_user.genre %}
+                        <strong>장르:</strong> {{ current_user.genre }}<br>
+                        {% endif %}
+                        {% if current_user.location %}
+                        <strong>지역:</strong> {{ current_user.location }}<br>
+                        {% endif %}
+                        {% if current_user.age %}
+                        <strong>나이:</strong> {{ current_user.age }}세<br>
+                        {% endif %}
+                        {% if current_user.bio %}
+                        <strong>소개:</strong><br>
+                        {{ current_user.bio }}
+                        {% endif %}
+                    </p>
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('edit_profile') }}" class="btn btn-primary">프로필 수정</a>
+                        <a href="{{ url_for('search', user_type='band' if current_user.user_type == 'musician' else 'musician') }}" 
+                           class="btn btn-outline-primary">
+                            {% if current_user.user_type == 'musician' %}밴드{% else %}멤버{% endif %} 찾기
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 소속 밴드 정보 (뮤지션인 경우) -->
+            {% if current_user.user_type == 'musician' and bands %}
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">소속 밴드</h5>
+                    <div class="list-group">
+                        {% for band, position in bands %}
+                        <a href="{{ url_for('view_profile', user_id=band.id) }}" class="list-group-item list-group-item-action">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h6 class="mb-1">{{ band.username }}</h6>
+                                <span class="badge bg-primary">{{ position }}</span>
+                            </div>
+                            <p class="mb-1">
+                                {% if band.genre %}장르: {{ band.genre }}{% endif %}
+                                {% if band.location %} · {{ band.location }}{% endif %}
+                            </p>
+                        </a>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- 밴드 멤버 목록 (밴드인 경우) -->
+            {% if current_user.user_type == 'band' and members %}
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">밴드 멤버</h5>
+                    <div class="list-group">
+                        {% for member, position in members %}
+                        <a href="{{ url_for('view_profile', user_id=member.id) }}" class="list-group-item list-group-item-action">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h6 class="mb-1">{{ member.username }}</h6>
+                                <span class="badge bg-primary">{{ position }}</span>
+                            </div>
+                            <p class="mb-1">
+                                {% if member.skill_level %}
+                                실력: 
+                                {% if member.skill_level == 'beginner' %}입문
+                                {% elif member.skill_level == 'intermediate' %}중급
+                                {% elif member.skill_level == 'advanced' %}상급
+                                {% elif member.skill_level == 'professional' %}전문가
+                                {% endif %}
+                                {% endif %}
+                            </p>
+                        </a>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
         </div>
-      </div>
+        
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">추천 {% if current_user.user_type == 'musician' %}밴드{% else %}멤버{% endif %}</h5>
+                    {% if recommendations %}
+                    <div class="row">
+                        {% for user in recommendations %}
+                        <div class="col-md-6 mb-3">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div>
+                                            <h6 class="card-title">{{ user.username }}</h6>
+                                            <p class="card-subtitle mb-2 text-muted">
+                                                {% if user.location %}{{ user.location }}{% endif %}
+                                            </p>
+                                        </div>
+                                        {% if user.user_type == 'musician' and user.skill_level %}
+                                        <span class="badge bg-primary">
+                                            {% if user.skill_level == 'beginner' %}입문
+                                            {% elif user.skill_level == 'intermediate' %}중급
+                                            {% elif user.skill_level == 'advanced' %}상급
+                                            {% elif user.skill_level == 'professional' %}전문가
+                                            {% endif %}
+                                        </span>
+                                        {% endif %}
+                                    </div>
+                                    <p class="card-text">
+                                        {% if user.user_type == 'musician' %}
+                                            {% if user.instrument %}
+                                            <strong>악기:</strong> {{ user.instrument }}<br>
+                                            {% endif %}
+                                        {% else %}
+                                            {% if user.band_size %}
+                                            <strong>현재 인원:</strong> {{ user.band_size }}명<br>
+                                            {% endif %}
+                                            {% if user.get_recruiting_positions() %}
+                                            <strong>모집 포지션:</strong>
+                                            <ul class="list-unstyled mb-0">
+                                                {% for position in user.get_recruiting_positions() %}
+                                                <li>- {{ position.instrument }} 
+                                                    ({% if position.skill_level == 'beginner' %}입문
+                                                    {% elif position.skill_level == 'intermediate' %}중급
+                                                    {% elif position.skill_level == 'advanced' %}상급
+                                                    {% elif position.skill_level == 'professional' %}전문가
+                                                    {% endif %})
+                                                </li>
+                                                {% endfor %}
+                                            </ul>
+                                            {% endif %}
+                                        {% endif %}
+                                        {% if user.genre %}
+                                        <strong>장르:</strong> {{ user.genre }}<br>
+                                        {% endif %}
+                                        {% if user.bio %}
+                                        <strong>소개:</strong> {{ user.bio[:100] }}{% if user.bio|length > 100 %}...{% endif %}
+                                        {% endif %}
+                                    </p>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <a href="{{ url_for('view_profile', user_id=user.id) }}" class="btn btn-outline-primary btn-sm">프로필 보기</a>
+                                        {% if current_user.is_authenticated %}
+                                        <button class="btn btn-success btn-sm">메시지 보내기</button>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="alert alert-info">
+                        아직 추천할 {% if current_user.user_type == 'musician' %}밴드{% else %}멤버{% endif %}가 없습니다.
+                        프로필 정보를 더 자세히 입력하시면 더 정확한 추천을 받으실 수 있습니다.
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">최근 활동</h5>
+                    <div class="list-group">
+                        <a href="#" class="list-group-item list-group-item-action">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h6 class="mb-1">새로운 메시지</h6>
+                                <small>3일 전</small>
+                            </div>
+                            <p class="mb-1">새로운 밴드 멤버로부터 메시지가 도착했습니다.</p>
+                        </a>
+                        <a href="#" class="list-group-item list-group-item-action">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h6 class="mb-1">매칭 제안</h6>
+                                <small>1주일 전</small>
+                            </div>
+                            <p class="mb-1">새로운 밴드에서 매칭을 제안했습니다.</p>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-  </div>
 </div>
 {% endblock %}

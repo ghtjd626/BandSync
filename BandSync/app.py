@@ -15,7 +15,18 @@ db = SQLAlchemy(app)
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'
 
-# 데시지 모델
+# 밴드 멤버십 모델
+class BandMembership(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    band_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    member_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    joined_at = db.Column(db.DateTime, default=datetime.utcnow)
+    position = db.Column(db.String(50))  # 악기/포지션
+
+    band = db.relationship('User', foreign_keys=[band_id], backref='band_members')
+    member = db.relationship('User', foreign_keys=[member_id], backref='memberships')
+
+# 메시지 모델
 class Message(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     sender_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
@@ -66,6 +77,16 @@ class User(UserMixin, db.Model):
         return Message.query.filter(
             or_(Message.receiver_id == self.id, Message.sender_id == self.id)
         ).order_by(Message.created_at.desc()).all()
+
+    def get_bands(self):
+        """뮤지션이 속한 밴드 목록 반환"""
+        memberships = BandMembership.query.filter_by(member_id=self.id).all()
+        return [(m.band, m.position) for m in memberships]
+
+    def get_members(self):
+        """밴드의 멤버 목록 반환"""
+        memberships = BandMembership.query.filter_by(band_id=self.id).all()
+        return [(m.member, m.position) for m in memberships]
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -296,9 +317,19 @@ def logout():
 @app.route('/dashboard')
 @login_required
 def dashboard():
-    # 추천 결과 가져오기
     recommendations = get_recommendations()
-    return render_template('dashboard.html', recommendations=recommendations)
+    
+    # 사용자 타입에 따라 다른 정보 가져오기
+    if current_user.user_type == 'musician':
+        bands = current_user.get_bands()  # 속한 밴드 목록
+    else:
+        bands = None
+        members = current_user.get_members()  # 밴드 멤버 목록
+    
+    return render_template('dashboard.html', 
+                         recommendations=recommendations,
+                         bands=bands,
+                         members=members if current_user.user_type == 'band' else None)
 
 @app.route('/profile/<int:user_id>')
 def view_profile(user_id):
@@ -361,6 +392,24 @@ def respond_to_message(message_id):
 
     message.status = 'accepted' if response == 'accept' else 'rejected'
     
+    # 수락된 경우 밴드 멤버십 생성
+    if response == 'accept':
+        if message.message_type == 'application':
+            # 가입 신청이 수락된 경우
+            membership = BandMembership(
+                band_id=current_user.id,  # 밴드(수락자)
+                member_id=message.sender_id,  # 신청자
+                position=message.sender.instrument  # 신청자의 악기
+            )
+        else:  # invitation
+            # 초대가 수락된 경우
+            membership = BandMembership(
+                band_id=message.sender_id,  # 밴드(초대자)
+                member_id=current_user.id,  # 수락자
+                position=current_user.instrument  # 수락자의 악기
+            )
+        db.session.add(membership)
+
     # 응답 메시지 생성
     response_message = Message(
         sender_id=current_user.id,
