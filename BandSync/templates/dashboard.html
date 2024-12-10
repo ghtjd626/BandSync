@@ -1,0 +1,91 @@
+{% extends "base.html" %} {% block title %}대시보드{% endblock %} {% block
+content %}
+<div class="container">
+  <h1 class="mb-4">{{ current_user.username }}님의 대시보드</h1>
+
+  <div class="row">
+    <div class="col-md-4">
+      <div class="card mb-4">
+        <div class="card-body">
+          <h5 class="card-title">프로필 정보</h5>
+          <p class="card-text">
+            <strong>이메일:</strong> {{ current_user.email }}<br />
+            <strong>계정 유형:</strong> {% if current_user.user_type ==
+            'musician' %}뮤지션{% else %}밴드{% endif %}<br />
+            {% if current_user.instrument %}
+            <strong>악기:</strong> {{ current_user.instrument }}<br />
+            {% endif %} {% if current_user.genre %}
+            <strong>장르:</strong> {{ current_user.genre }}<br />
+            {% endif %} {% if current_user.location %}
+            <strong>지역:</strong> {{ current_user.location }} {% endif %}
+          </p>
+          <a href="#" class="btn btn-primary">프로필 수정</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-8">
+      <div class="card mb-4">
+        <div class="card-body">
+          <h5 class="card-title">최근 활동</h5>
+          <div class="list-group">
+            <a href="#" class="list-group-item list-group-item-action">
+              <div class="d-flex w-100 justify-content-between">
+                <h6 class="mb-1">새로운 메시지</h6>
+                <small>3일 전</small>
+              </div>
+              <p class="mb-1">새로운 밴드 멤버로부터 메시지가 도착했습니다.</p>
+            </a>
+            <a href="#" class="list-group-item list-group-item-action">
+              <div class="d-flex w-100 justify-content-between">
+                <h6 class="mb-1">매칭 제안</h6>
+                <small>1주일 전</small>
+              </div>
+              <p class="mb-1">새로운 밴드에서 매칭을 제안했습니다.</p>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-body">
+          <h5 class="card-title">
+            추천 {% if current_user.user_type == 'musician' %}밴드{% else
+            %}멤버{% endif %}
+          </h5>
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <div class="card h-100">
+                <div class="card-body">
+                  <h6 class="card-title">추천 #1</h6>
+                  <p class="card-text">
+                    장르와 지역이 일치하는 {% if current_user.user_type ==
+                    'musician' %}밴드{% else %}멤버{% endif %}입니다.
+                  </p>
+                  <a href="#" class="btn btn-outline-primary btn-sm"
+                    >자세히 보기</a
+                  >
+                </div>
+              </div>
+            </div>
+            <div class="col-md-6 mb-3">
+              <div class="card h-100">
+                <div class="card-body">
+                  <h6 class="card-title">추천 #2</h6>
+                  <p class="card-text">
+                    실력과 장르가 일치하는 {% if current_user.user_type ==
+                    'musician' %}밴드{% else %}멤버{% endif %}입니다.
+                  </p>
+                  <a href="#" class="btn btn-outline-primary btn-sm"
+                    >자세히 보기</a
+                  >
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

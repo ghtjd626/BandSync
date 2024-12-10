@@ -1,0 +1,87 @@
+{% extends "base.html" %} {% block title %}홈{% endblock %} {% block content %}
+<div class="text-center py-5">
+  <h1 class="display-4 mb-4">BandSync에 오신 것을 환영합니다!</h1>
+  <p class="lead mb-4">
+    당신의 음악적 여정을 함께할 완벽한 밴드메이트를 찾아보세요.
+  </p>
+
+  <div class="row justify-content-center mb-5">
+    <div class="col-md-8">
+      <div class="card bg-light">
+        <div class="card-body">
+          <h5 class="card-title">나에게 맞는 밴드/뮤지션 찾기</h5>
+          <form class="mt-3">
+            <div class="row g-3">
+              <div class="col-md-4">
+                <select class="form-select" name="instrument">
+                  <option value="">악기 선택</option>
+                  <option value="guitar">기타</option>
+                  <option value="bass">베이스</option>
+                  <option value="drums">드럼</option>
+                  <option value="vocals">보컬</option>
+                  <option value="keyboard">키보드</option>
+                </select>
+              </div>
+              <div class="col-md-4">
+                <select class="form-select" name="genre">
+                  <option value="">장르 선택</option>
+                  <option value="rock">록</option>
+                  <option value="jazz">재즈</option>
+                  <option value="pop">팝</option>
+                  <option value="metal">메탈</option>
+                  <option value="blues">블루스</option>
+                </select>
+              </div>
+              <div class="col-md-4">
+                <select class="form-select" name="location">
+                  <option value="">지역 선택</option>
+                  <option value="seoul">서울</option>
+                  <option value="busan">부산</option>
+                  <option value="incheon">인천</option>
+                  <option value="daegu">대구</option>
+                  <option value="daejeon">대전</option>
+                </select>
+              </div>
+            </div>
+            <button type="submit" class="btn btn-primary mt-3">검색하기</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row mb-4">
+    <div class="col-md-4">
+      <div class="card h-100">
+        <div class="card-body">
+          <h5 class="card-title">밴드 찾기</h5>
+          <p class="card-text">
+            당신의 실력과 스타일에 맞는 밴드를 찾아보세요.
+          </p>
+          <a href="#" class="btn btn-outline-primary">밴드 둘러보기</a>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card h-100">
+        <div class="card-body">
+          <h5 class="card-title">멤버 찾기</h5>
+          <p class="card-text">밴드에 딱 맞는 새로운 멤버를 찾아보세요.</p>
+          <a href="#" class="btn btn-outline-primary">멤버 둘러보기</a>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card h-100">
+        <div class="card-body">
+          <h5 class="card-title">잼 세션</h5>
+          <p class="card-text">
+            가벼운 잼 세션으로 다른 뮤지션들과 교류해보세요.
+          </p>
+          <a href="#" class="btn btn-outline-primary">세션 찾기</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
