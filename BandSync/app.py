@@ -58,9 +58,9 @@ class User(UserMixin, db.Model):
     bio = db.Column(db.Text)
 
     # 밴드 추가 정보
-    recruiting_positions = db.Column(db.Text)  # JSON 형식으로 저장: [{"instrument": "guitar", "skill_level": "intermediate"}]
-    band_size = db.Column(db.Integer)  # 현재 밴드 인원
-    preferred_age_range = db.Column(db.String(50))  # "20-30"과 같은 형식
+    recruiting_positions = db.Column(db.Text)  # JSON 형식으로 저장
+    band_size = db.Column(db.Integer)
+    preferred_age_range = db.Column(db.String(50))
 
     def get_recruiting_positions(self):
         if self.recruiting_positions:
@@ -87,6 +87,38 @@ class User(UserMixin, db.Model):
         """밴드의 멤버 목록 반환"""
         memberships = BandMembership.query.filter_by(band_id=self.id).all()
         return [(m.member, m.position) for m in memberships]
+
+    def is_member_of(self, band_id):
+        """해당 밴드의 멤버인지 확인"""
+        return BandMembership.query.filter_by(
+            band_id=band_id,
+            member_id=self.id
+        ).first() is not None
+
+    def has_member(self, member_id):
+        """해당 멤버가 이 밴드에 속해있는지 확인"""
+        return BandMembership.query.filter_by(
+            band_id=self.id,
+            member_id=member_id
+        ).first() is not None
+
+    def has_pending_application(self, band_id):
+        """해당 밴드에 대기 중인 가입 신청이 있는지 확인"""
+        return Message.query.filter_by(
+            sender_id=self.id,
+            receiver_id=band_id,
+            message_type='application',
+            status='pending'
+        ).first() is not None
+
+    def has_pending_invitation(self, member_id):
+        """해당 멤버에게 대기 중인 초대가 있는지 확인"""
+        return Message.query.filter_by(
+            sender_id=self.id,
+            receiver_id=member_id,
+            message_type='invitation',
+            status='pending'
+        ).first() is not None
 
 @login_manager.user_loader
 def load_user(user_id):

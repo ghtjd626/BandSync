@@ -86,14 +86,37 @@ endblock %} {% block content %}
 
           {% if current_user.is_authenticated and current_user.id != user.id %}
           <div class="mt-4 d-grid gap-2">
+            {% if user.user_type == 'band' %} {% if
+            current_user.is_member_of(user.id) %}
+            <button class="btn btn-secondary" disabled>
+              이미 가입된 밴드입니다
+            </button>
+            {% elif current_user.has_pending_application(user.id) %}
+            <button class="btn btn-warning" disabled>가입 신청 대기중</button>
+            {% else %}
             <button
               class="btn btn-primary"
               data-bs-toggle="modal"
               data-bs-target="#messageModal"
             >
-              {% if user.user_type == 'band' %} 가입 신청하기 {% else %} 멤버로
-              초대하기 {% endif %}
+              가입 신청하기
             </button>
+            {% endif %} {% else %} {# user is musician #} {% if
+            current_user.has_member(user.id) %}
+            <button class="btn btn-secondary" disabled>
+              이미 밴드 멤버입니다
+            </button>
+            {% elif current_user.has_pending_invitation(user.id) %}
+            <button class="btn btn-warning" disabled>초대 대기중</button>
+            {% else %}
+            <button
+              class="btn btn-primary"
+              data-bs-toggle="modal"
+              data-bs-target="#messageModal"
+            >
+              멤버로 초대하기
+            </button>
+            {% endif %} {% endif %}
           </div>
           {% endif %}
         </div>
