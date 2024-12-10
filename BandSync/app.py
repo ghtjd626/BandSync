@@ -5,6 +5,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from sqlalchemy import or_
 from datetime import datetime
 import os, json
+from recommender import BandSyncRecommender
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.urandom(24)
@@ -254,51 +255,28 @@ def search():
 
     return render_template('search_results.html', results=results)
 
-@app.route('/recommendations')
-@login_required
 def get_recommendations():
-    # 현재 사용자와 반대되는 user_type 설정
-    target_type = 'musician' if current_user.user_type == 'band' else 'band'
+    """사용자 유형에 따라 추천 목록을 반환합니다."""
+    # 모든 사용자, 메시지, 멤버십 데이터 가져오기
+    users = User.query.all()
+    messages = Message.query.all()
+    memberships = BandMembership.query.all()
     
-    # 기본 쿼리 생성
-    query = User.query.filter(User.user_type == target_type)
+    # 추천 시스템 초기화
+    recommender = BandSyncRecommender(users, messages, memberships)
     
-    # 현재 사용자 제외
-    query = query.filter(User.id != current_user.id)
+    # 현재 사용자 유형에 따라 추천 대상 필터링
+    target_type = 'band' if current_user.user_type == 'musician' else 'musician'
     
-    # 매칭 점수를 계산하여 결과 정렬
-    results = []
-    all_users = query.all()
+    # 추천 받기
+    recommendations = recommender.get_recommendations(
+        user_id=current_user.id,
+        n_recommendations=6,
+        user_type_filter=target_type
+    )
     
-    for user in all_users:
-        score = 0
-        
-        # 장르 매칭
-        if user.genre and current_user.genre and user.genre == current_user.genre:
-            score += 3
-            
-        # 지역 매칭
-        if user.location and current_user.location and user.location == current_user.location:
-            score += 2
-            
-        # 실력 수준 매칭
-        if user.skill_level and current_user.skill_level:
-            skill_levels = ['beginner', 'intermediate', 'advanced', 'professional']
-            user_skill_idx = skill_levels.index(user.skill_level)
-            current_skill_idx = skill_levels.index(current_user.skill_level)
-            if abs(user_skill_idx - current_skill_idx) <= 1:  # 실력 차이가 1단계 이내
-                score += 1
-        
-        if score > 0:  # 최소한 하나의 조건이라도 만족하는 경우만 추가
-            results.append((user, score))
-    
-    # 점수에 따라 정렬
-    results.sort(key=lambda x: x[1], reverse=True)
-    
-    # 상위 5개 결과만 반환
-    top_recommendations = [r[0] for r in results[:5]]
-    
-    return top_recommendations
+    # 추천 결과 변환
+    return [rec['user'] for rec in recommendations]
 
 @app.route('/edit_profile', methods=['GET', 'POST'])
 @login_required
@@ -437,15 +415,15 @@ def dashboard():
     
     # 사용자 타입에 따라 다른 정보 가져오기
     if current_user.user_type == 'musician':
-        bands = current_user.get_bands()  # 속한 밴드 목록
+        bands = current_user.get_bands()
     else:
         bands = None
-        members = current_user.get_members()  # 밴드 멤버 목록
+        members = current_user.get_members()
     
     # 최근 활동 가져오기
     recent_activities = current_user.get_recent_activities()
     
-    return render_template('dashboard.html', 
+    return render_template('dashboard.html',
                          recommendations=recommendations,
                          bands=bands,
                          members=members if current_user.user_type == 'band' else None,
@@ -555,7 +533,7 @@ def init_db():
         db.drop_all()  # 기존 테이블 삭제
         db.create_all()  # 새로운 테이블 생성
         
-        # 테스트용 데이터 생성 (선택사항)
+        # 테스트용 데이터 생성
         test_band = User(
             username='test_band',
             email='band@test.com',
