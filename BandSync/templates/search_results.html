@@ -131,8 +131,24 @@
                         </p>
                         <div class="d-flex justify-content-between align-items-center">
                             <a href="{{ url_for('view_profile', user_id=user.id) }}" class="btn btn-outline-primary btn-sm">프로필 보기</a>
-                            {% if current_user.is_authenticated %}
-                            <button class="btn btn-success btn-sm">메시지 보내기</button>
+                            {% if current_user.is_authenticated and current_user.id != user.id %}
+                                {% if user.user_type == 'band' and current_user.user_type == 'musician' %}
+                                    {% if current_user.is_member_of(user.id) %}
+                                        <button class="btn btn-secondary btn-sm" disabled>이미 가입된 밴드</button>
+                                    {% elif current_user.has_pending_application(user.id) %}
+                                        <button class="btn btn-warning btn-sm" disabled>신청 대기중</button>
+                                    {% else %}
+                                        <button class="btn btn-success btn-sm" onclick="openMessageModal('{{ user.id }}', 'application')">가입 신청</button>
+                                    {% endif %}
+                                {% elif user.user_type == 'musician' and current_user.user_type == 'band' %}
+                                    {% if current_user.has_member(user.id) %}
+                                        <button class="btn btn-secondary btn-sm" disabled>이미 멤버</button>
+                                    {% elif current_user.has_pending_invitation(user.id) %}
+                                        <button class="btn btn-warning btn-sm" disabled>초대 대기중</button>
+                                    {% else %}
+                                        <button class="btn btn-success btn-sm" onclick="openMessageModal('{{ user.id }}', 'invitation')">멤버로 초대</button>
+                                    {% endif %}
+                                {% endif %}
                             {% endif %}
                         </div>
                     </div>
@@ -153,4 +169,83 @@
         {% endif %}
     </div>
 </div>
+
+<!-- 메시지 모달 -->
+<div class="modal fade" id="messageModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalTitle"></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="messageForm">
+                    <input type="hidden" id="receiverId">
+                    <input type="hidden" id="messageType">
+                    <div class="mb-3">
+                        <label for="subject" class="form-label">제목</label>
+                        <input type="text" class="form-control" id="subject" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="content" class="form-label">메시지</label>
+                        <textarea class="form-control" id="content" rows="4" required></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+                <button type="button" class="btn btn-primary" onclick="sendMessage()">보내기</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let messageModal;
+
+document.addEventListener('DOMContentLoaded', function() {
+    messageModal = new bootstrap.Modal(document.getElementById('messageModal'));
+});
+
+function openMessageModal(userId, type) {
+    document.getElementById('receiverId').value = userId;
+    document.getElementById('messageType').value = type;
+    document.getElementById('modalTitle').textContent = type === 'application' ? '밴드 가입 신청' : '멤버 초대';
+    document.getElementById('subject').value = type === 'application' ? '밴드 가입 신청' : '멤버 초대';
+    messageModal.show();
+}
+
+function sendMessage() {
+    const receiverId = document.getElementById('receiverId').value;
+    const messageType = document.getElementById('messageType').value;
+    const subject = document.getElementById('subject').value;
+    const content = document.getElementById('content').value;
+
+    if (!subject || !content) {
+        alert('모든 필드를 입력해주세요.');
+        return;
+    }
+
+    fetch(`/send_message/${receiverId}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: `subject=${encodeURIComponent(subject)}&content=${encodeURIComponent(content)}&message_type=${messageType}`
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('메시지가 전송되었습니다.');
+            messageModal.hide();
+            location.reload();
+        } else {
+            alert(data.error || '메시지 전송에 실패했습니다.');
+        }
+    })
+    .catch(error => {
+        alert('메시지 전송 중 오류가 발생했습니다.');
+    });
+}
+</script>
 {% endblock %} 
