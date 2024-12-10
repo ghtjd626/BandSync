@@ -2,6 +2,82 @@
 
 BandSync는 밴드와 뮤지션을 연결해주는 웹 기반 플랫폼입니다. 악기, 장르, 지역 등 다양한 조건을 기반으로 자신에게 맞는 밴드나 멤버를 찾을 수 있으며, 연습실 정보도 공유할 수 있습니다.
 
+## 매칭 및 추천 시스템 🤖
+
+BandSync는 고도화된 머신러닝 기반의 매칭 시스템을 사용하여 사용자에게 최적의 밴드 또는 멤버를 추천합니다.
+
+### 추천 알고리즘
+
+1. **하이브리드 추천 방식**
+
+   - 콘텐츠 기반 필터링: 사용자의 프로필 정보 활용
+   - 협업 필터링: 사용자 활동 데이터 기반
+   - 가중치 기반 하이브리드 모델
+
+2. **주요 매칭 요소**
+
+   - 장르 적합도 (원-핫 인코딩)
+   - 실력 수준 매칭
+   - 지역 근접성
+   - 활동 시간대
+   - 선호 음악 스타일
+
+3. **고려하는 특성**
+
+   ```python
+   features = {
+       'genre_vector': [1, 0, 0, ...],  # 장르 원-핫 인코딩
+       'location_vector': [0, 1, 0, ...],  # 지역 원-핫 인코딩
+       'skill_level': 3,  # 1-4 수준
+       'activity_score': 0.85,  # 활동성 점수
+       'success_rate': 0.75,  # 매칭 성공률
+   }
+   ```
+
+4. **매칭 점수 계산**
+   - 코사인 유사도 기반 매칭
+   - 표준화된 특성 벡터 사용
+   - 동적 가중치 조정
+
+### 매칭 프로세스
+
+1. **프로필 분석**
+
+   - 사용자 입력 정보 벡터화
+   - 활동 데이터 수집 및 분석
+   - 선호도 패턴 추출
+
+2. **추천 생성**
+
+   - 유사도 점수 계산
+   - 상위 N개 추천 선정
+   - 다양성 보장을 위한 필터링
+
+3. **지속적 개선**
+   - 사용자 피드백 반영
+   - A/B 테스트를 통한 알고리즘 개선
+   - 주기적인 모델 재학습
+
+### 기술적 구현
+
+```python
+class BandSyncRecommender:
+    def __init__(self):
+        self.model = None
+        self.scaler = StandardScaler()
+
+    def preprocess_features(self, user_data):
+        # 특성 전처리 및 벡터화
+        features = self._extract_features(user_data)
+        return self.scaler.transform(features)
+
+    def generate_recommendations(self, user_id, n_recommendations=5):
+        # 추천 생성
+        user_vector = self.get_user_vector(user_id)
+        similarities = self.compute_similarities(user_vector)
+        return self.filter_top_recommendations(similarities, n_recommendations)
+```
+
 ## 주요 기능 ✨
 
 ### 1. 밴드/뮤지션 매칭
@@ -63,7 +139,7 @@ BandSync는 밴드와 뮤지션을 연결해주는 웹 기반 플랫폼입니다
 1. 저장소 클론
 
 ```bash
-git clone https://github.com/yourusername/BandSync.git
+git clone https://github.com/ghtjd626/BandSync.git
 cd BandSync
 ```
 
@@ -121,23 +197,22 @@ BandSync/
 
 ### 메인 페이지
 
-![메인 페이지](screenshots/main.png)
+![메인 페이지](![image](https://github.com/user-attachments/assets/ebf7b246-3798-43bd-b036-29f7ef2a63aa))
 
 ### 밴드/뮤지션 검색
 
-![검색 페이지](screenshots/search.png)
+![검색 페이지](<img width="1512" alt="image" src="https://github.com/user-attachments/assets/696e3b29-73a7-423a-b61c-488b94e0954a">
+)
+![검색 페이지](<img width="1512" alt="image" src="https://github.com/user-attachments/assets/696e3b29-73a7-423a-b61c-488b94e0954a">
+)
 
 ### 연습실 정보
 
-![연습실 정보](screenshots/practice-room.png)
+![연습실 정보](<img width="1512" alt="image" src="https://github.com/user-attachments/assets/4087d8f1-a528-49bb-94c5-56a638e952d9">
+)
+![연습실 정보](<img width="1512" alt="image" src="https://github.com/user-attachments/assets/6eae5eec-300b-4c60-a0ba-f848ef28e664">
+)
 
-## 기여 방법 🤝
-
-1. Fork the Project
-2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the Branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
 
 ## 향후 계획 🚀
 
@@ -155,11 +230,11 @@ BandSync/
 
 ## 개발자 정보 👨‍💻
 
-- 이름: [Your Name]
-- 이메일: [Your Email]
-- GitHub: [@yourusername](https://github.com/yourusername)
+- 이름: [전근호]
+- 이메일: [ghtjd626@naver.com]
+- GitHub: [@ghtjd626](https://github.com/ghtjd626)
 
-## 감사의 글 🙏
+## 오픈소스 🙏
 
 이 프로젝트는 다음과 같은 오픈소스 프로젝트들의 도움을 받았습니다:
 
