@@ -1,0 +1,108 @@
+{% extends "base.html" %} {% block title %}연습실 정보{% endblock %} {% block
+content %}
+<div class="container">
+  <div class="row mb-4">
+    <div class="col-md-8">
+      <h2>연습실 목록</h2>
+    </div>
+    <div class="col-md-4 text-end">
+      <a href="{{ url_for('add_practice_room') }}" class="btn btn-primary"
+        >연습실 등록</a
+      >
+    </div>
+  </div>
+
+  <!-- 검색 필터 -->
+  <div class="card mb-4">
+    <div class="card-body">
+      <form
+        method="GET"
+        action="{{ url_for('practice_rooms') }}"
+        class="row g-3"
+      >
+        <div class="col-md-4">
+          <label for="location" class="form-label">지역</label>
+          <input
+            type="text"
+            class="form-control"
+            id="location"
+            name="location"
+            value="{{ request.args.get('location', '') }}"
+          />
+        </div>
+        <div class="col-md-3">
+          <label for="min_price" class="form-label">최소 가격</label>
+          <input
+            type="number"
+            class="form-control"
+            id="min_price"
+            name="min_price"
+            value="{{ request.args.get('min_price', '') }}"
+          />
+        </div>
+        <div class="col-md-3">
+          <label for="max_price" class="form-label">최대 가격</label>
+          <input
+            type="number"
+            class="form-control"
+            id="max_price"
+            name="max_price"
+            value="{{ request.args.get('max_price', '') }}"
+          />
+        </div>
+        <div class="col-md-2 d-flex align-items-end">
+          <button type="submit" class="btn btn-primary w-100">검색</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 연습실 목록 -->
+  <div class="row">
+    {% for room in practice_rooms %}
+    <div class="col-md-6 mb-4">
+      <div class="card h-100">
+        <div class="card-body">
+          <h5 class="card-title">{{ room.name }}</h5>
+          <h6 class="card-subtitle mb-2 text-muted">{{ room.location }}</h6>
+
+          <p class="card-text">
+            <strong>시간당 가격:</strong> {{ room.price_per_hour }}원<br />
+            <strong>편의시설:</strong> {{ room.amenities }}<br />
+            {% if room.description %}
+            <small class="text-muted"
+              >{{ room.description[:100] }}{% if room.description|length > 100
+              %}...{% endif %}</small
+            >
+            {% endif %}
+          </p>
+
+          <!-- 평균 평점 표시 -->
+          <div class="mb-2">
+            <span class="text-warning">
+              {% set ratings = room.reviews|map(attribute='rating')|list %} {%
+              set avg_rating = ratings|avg|round(1) %} {% for i in range(5) %}
+              {% if i < avg_rating|int %} ★ {% else %} ☆ {% endif %} {% endfor
+              %}
+            </span>
+            <small class="text-muted"
+              >({{ room.reviews|length }}개의 리뷰)</small
+            >
+          </div>
+
+          <a
+            href="{{ url_for('practice_room_detail', room_id=room.id) }}"
+            class="btn btn-outline-primary"
+            >자세히 보기</a
+          >
+        </div>
+      </div>
+    </div>
+    {% else %}
+    <div class="col-12">
+      <div class="alert alert-info">등록된 연습실이 없습니다.</div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

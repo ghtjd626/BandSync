@@ -6,6 +6,7 @@ from sqlalchemy import or_
 from datetime import datetime
 import os, json
 from recommender import BandSyncRecommender
+from sqlalchemy.sql import func
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.urandom(24)
@@ -15,6 +16,14 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'
+
+# Jinja2 사용자 정의 필터 추가
+@app.template_filter('avg')
+def avg_filter(l):
+    """리스트의 평균을 계산합니다."""
+    if not l:
+        return 0
+    return sum(l) / len(l)
 
 # 밴드 멤버십 모델
 class BandMembership(db.Model):
@@ -526,6 +535,122 @@ def respond_to_message(message_id):
     except:
         db.session.rollback()
         return jsonify({'success': False, 'error': '응답 처리에 실패했습니다.'}), 500
+
+class PracticeRoom(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    location = db.Column(db.String(200), nullable=False)
+    address = db.Column(db.String(200), nullable=False)
+    contact = db.Column(db.String(100))
+    price_per_hour = db.Column(db.Integer)
+    description = db.Column(db.Text)
+    amenities = db.Column(db.String(200))  # 편의시설 (콤마로 구분)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))  # 등록한 사용자
+    
+    # 관계 설정
+    reviews = db.relationship('PracticeRoomReview', backref='practice_room', lazy=True)
+    
+class PracticeRoomReview(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    practice_room_id = db.Column(db.Integer, db.ForeignKey('practice_room.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    rating = db.Column(db.Integer, nullable=False)  # 1-5 평점
+    comment = db.Column(db.Text)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+@app.route('/practice-rooms')
+def practice_rooms():
+    """연습실 목록을 보여줍니다."""
+    # 검색 파라미터
+    location = request.args.get('location', '')
+    min_price = request.args.get('min_price', type=int)
+    max_price = request.args.get('max_price', type=int)
+    
+    # 기본 쿼리
+    query = PracticeRoom.query
+    
+    # 필터 적용
+    if location:
+        query = query.filter(PracticeRoom.location.like(f'%{location}%'))
+    if min_price is not None:
+        query = query.filter(PracticeRoom.price_per_hour >= min_price)
+    if max_price is not None:
+        query = query.filter(PracticeRoom.price_per_hour <= max_price)
+    
+    # 정렬 (최신순)
+    practice_rooms = query.order_by(PracticeRoom.created_at.desc()).all()
+    
+    return render_template('practice_rooms.html', practice_rooms=practice_rooms)
+
+@app.route('/practice-room/<int:room_id>')
+def practice_room_detail(room_id):
+    """연습실 상세 정보를 보여줍니다."""
+    room = PracticeRoom.query.get_or_404(room_id)
+    reviews = PracticeRoomReview.query.filter_by(practice_room_id=room_id)\
+        .order_by(PracticeRoomReview.created_at.desc()).all()
+    
+    # 평균 평점 계산
+    avg_rating = db.session.query(func.avg(PracticeRoomReview.rating))\
+        .filter_by(practice_room_id=room_id).scalar() or 0
+    
+    return render_template('practice_room_detail.html', 
+                         room=room, 
+                         reviews=reviews, 
+                         avg_rating=round(avg_rating, 1))
+
+@app.route('/practice-room/add', methods=['GET', 'POST'])
+@login_required
+def add_practice_room():
+    """새로운 연습실을 등록합니다."""
+    if request.method == 'POST':
+        room = PracticeRoom(
+            name=request.form['name'],
+            location=request.form['location'],
+            address=request.form['address'],
+            contact=request.form['contact'],
+            price_per_hour=int(request.form['price_per_hour']),
+            description=request.form['description'],
+            amenities=request.form['amenities'],
+            user_id=current_user.id
+        )
+        
+        db.session.add(room)
+        db.session.commit()
+        
+        flash('연습실이 등록되었습니다.', 'success')
+        return redirect(url_for('practice_rooms'))
+        
+    return render_template('add_practice_room.html')
+
+@app.route('/practice-room/<int:room_id>/review', methods=['POST'])
+@login_required
+def add_review(room_id):
+    """연습실 리뷰를 추가합니다."""
+    room = PracticeRoom.query.get_or_404(room_id)
+    
+    # 이미 리뷰를 작성했는지 확인
+    existing_review = PracticeRoomReview.query.filter_by(
+        practice_room_id=room_id,
+        user_id=current_user.id
+    ).first()
+    
+    if existing_review:
+        flash('이미 리뷰를 작성하셨습니다.', 'error')
+        return redirect(url_for('practice_room_detail', room_id=room_id))
+    
+    review = PracticeRoomReview(
+        practice_room_id=room_id,
+        user_id=current_user.id,
+        rating=int(request.form['rating']),
+        comment=request.form['comment']
+    )
+    
+    db.session.add(review)
+    db.session.commit()
+    
+    flash('리뷰가 등록되었습니다.', 'success')
+    return redirect(url_for('practice_room_detail', room_id=room_id))
 
 def init_db():
     with app.app_context():

@@ -1,0 +1,124 @@
+{% extends "base.html" %} {% block title %}연습실 등록{% endblock %} {% block
+content %}
+<div class="container">
+  <div class="row justify-content-center">
+    <div class="col-md-8">
+      <div class="card">
+        <div class="card-body">
+          <h2 class="card-title mb-4">연습실 등록</h2>
+
+          <form method="POST" action="{{ url_for('add_practice_room') }}">
+            <div class="mb-3">
+              <label for="name" class="form-label">연습실 이름</label>
+              <input
+                type="text"
+                class="form-control"
+                id="name"
+                name="name"
+                required
+              />
+            </div>
+
+            <div class="mb-3">
+              <label for="location" class="form-label">지역</label>
+              <select
+                class="form-select"
+                id="location"
+                name="location"
+                required
+              >
+                <option value="">선택해주세요</option>
+                <option value="서울">서울</option>
+                <option value="부산">부산</option>
+                <option value="인천">인천</option>
+                <option value="대구">대구</option>
+                <option value="대전">대전</option>
+                <option value="광주">광주</option>
+                <option value="울산">울산</option>
+                <option value="세종">세종</option>
+                <option value="경기">경기</option>
+                <option value="강원">강원</option>
+                <option value="충북">충북</option>
+                <option value="충남">충남</option>
+                <option value="전북">전북</option>
+                <option value="전남">전남</option>
+                <option value="경북">경북</option>
+                <option value="경남">경남</option>
+                <option value="제주">제주</option>
+              </select>
+            </div>
+
+            <div class="mb-3">
+              <label for="address" class="form-label">상세 주소</label>
+              <input
+                type="text"
+                class="form-control"
+                id="address"
+                name="address"
+                required
+              />
+            </div>
+
+            <div class="mb-3">
+              <label for="contact" class="form-label">연락처</label>
+              <input
+                type="text"
+                class="form-control"
+                id="contact"
+                name="contact"
+                placeholder="예: 010-1234-5678"
+                required
+              />
+            </div>
+
+            <div class="mb-3">
+              <label for="price_per_hour" class="form-label"
+                >시간당 가격 (원)</label
+              >
+              <input
+                type="number"
+                class="form-control"
+                id="price_per_hour"
+                name="price_per_hour"
+                required
+              />
+            </div>
+
+            <div class="mb-3">
+              <label for="amenities" class="form-label">편의시설</label>
+              <input
+                type="text"
+                class="form-control"
+                id="amenities"
+                name="amenities"
+                placeholder="예: 에어컨, 주차장, 드럼, 앰프"
+                required
+              />
+            </div>
+
+            <div class="mb-3">
+              <label for="description" class="form-label">상세 설명</label>
+              <textarea
+                class="form-control"
+                id="description"
+                name="description"
+                rows="5"
+                required
+              ></textarea>
+            </div>
+
+            <div class="d-grid gap-2">
+              <button type="submit" class="btn btn-primary">등록하기</button>
+              <a
+                href="{{ url_for('practice_rooms') }}"
+                class="btn btn-outline-secondary"
+                >취소</a
+              >
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
