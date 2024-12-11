@@ -229,7 +229,7 @@ BandSync/
 
 ## 라이선스 📝
 
-이 프로젝트는 MIT 라이선스를 따릅니다. 자세한 내용은 [[LICENSE](https://github.com/ghtjd626/BandSync/LICENSE)] 파일을 참조하세요.
+이 프로젝트는 MIT 라이선스를 따릅니다. 자세한 내용은 [LICENSE](https://github.com/ghtjd626/BandSync/blob/main/LICENSE) 파일을 참조하세요.
 
 ## 오픈소스 🙏
 
